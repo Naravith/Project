@@ -70,6 +70,7 @@ class ExampleSwitch13(app_manager.RyuApp):
             for j in self.mac_to_port[i]:
                 print("in-port: {0}   |   Mac: {1}".format(self.mac_to_port[i][j], j))
 
+        print('-'*25)
         # if the destination mac address is already learned,
         # decide which port to output the packet, otherwise FLOOD.
         if dst in self.mac_to_port[dpid]:
