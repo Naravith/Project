@@ -59,10 +59,16 @@ class ExampleSwitch13(app_manager.RyuApp):
         in_port = msg.match['in_port']
 
         self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
-        print(self.mac_to_port)
 
         # learn a mac address to avoid FLOOD next time.
         self.mac_to_port[dpid][src] = in_port
+
+        # Flow Table Easy Understanding
+        print("Flow Tables:")
+        for i in self.mac_to_port.keys():
+            print("Switch : S{0}".format(i))
+            for j in self.mac_to_port[i]:
+                print("in-port: {0}   |   Mac: {1}".format(self.mac_to_port[i][j], j))
 
         # if the destination mac address is already learned,
         # decide which port to output the packet, otherwise FLOOD.
