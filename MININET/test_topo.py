@@ -12,6 +12,7 @@ class MyTopo( Topo ):
         info('*** Adding Hosts\n')
         Host = []
         number_host = 3
+        bw_fast_eth = 100
         for i in ['h'+str(i+1) for i in range(number_host)]:
             Host.append(self.addHost(i))
         """
@@ -35,26 +36,26 @@ class MyTopo( Topo ):
         #Add Links
         info('*** Creating Links (Host -- Switch)\n')
         """
-        self.addLink(S1,S2)
-        self.addLink(S2,S3)
-        self.addLink(S1,H1)
-        self.addLink(S2,H2)
-        self.addLink(S3,H3)
+        self.addLink(S1,S2, bw = bw_fast_eth)
+        self.addLink(S2,S3, bw = bw_fast_eth)
+        self.addLink(S1,H1, bw = bw_fast_eth)
+        self.addLink(S2,H2, bw = bw_fast_eth)
+        self.addLink(S3,H3, bw = bw_fast_eth)
         """
         for i in range(number_switch):
-            self.addLink(Switch[i], Host[i])
+            self.addLink(Switch[i], Host[i], bw = bw_fast_eth)
 	#Add Host3 to S1
-	self.addLink(Switch[1], Host[2])
+	self.addLink(Switch[1], Host[2], bw = bw_fast_eth)
 
         
         info('*** Creating Links (Switch -- Switch)\n')
         """
-        self.addLink(Switch[0], Switch[4])
-        self.addLink(Switch[1], Switch[4])
-        self.addLink(Switch[2], Switch[4])
-        self.addLink(Switch[3], Switch[4])
+        self.addLink(Switch[0], Switch[4], bw = bw_fast_eth)
+        self.addLink(Switch[1], Switch[4], bw = bw_fast_eth)
+        self.addLink(Switch[2], Switch[4], bw = bw_fast_eth)
+        self.addLink(Switch[3], Switch[4], bw = bw_fast_eth)
 	"""
-	self.addLink(Switch[0],Switch[1])
+	self.addLink(Switch[0],Switch[1], bw = bw_fast_eth)
         
 
 topos = { 'mytopo': ( lambda: MyTopo() ) }
