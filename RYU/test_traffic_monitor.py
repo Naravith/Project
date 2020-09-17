@@ -6,6 +6,8 @@ from ryu.controller.handler import MAIN_DISPATCHER, DEAD_DISPATCHER
 from ryu.controller.handler import set_ev_cls
 from ryu.lib import hub
 
+import json
+
 
 class SimpleMonitor13(simple_switch_13.SimpleSwitch13):
 
@@ -66,18 +68,24 @@ class SimpleMonitor13(simple_switch_13.SimpleSwitch13):
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
     def _port_stats_reply_handler(self, ev):
         body = ev.msg.body
-        print("+" * 30)
-        print("Body:\n{0}".format(body))
-        print("+" * 30)
+        print("+" * 50)
+        #print("Data Path:\n{0}".format(self.datapaths))
+        self.logger.info('%s', json.dumps(ev.msg.to_jsondict(), ensure_ascii=True,indent=3, sort_keys=True))
+        print("lo" * 25)
+        print(ev.msg.to_jsondict())
+        print("lo" * 25)
+        print(ev.msg.datapath.id)
+        print("lo" * 25)
         self.logger.info('datapath         port     '
                          'rx-pkts  rx-bytes rx-error '
                          'tx-pkts  tx-bytes tx-error')
         self.logger.info('---------------- -------- '
                          '-------- -------- -------- '
                          '-------- -------- --------')
+        print("*" * 50)
         for stat in sorted(body, key=attrgetter('port_no')):
             self.logger.info('%016x %8x %8d %8d %8d %8d %8d %8d',
                              ev.msg.datapath.id, stat.port_no,
                              stat.rx_packets, stat.rx_bytes, stat.rx_errors,
                              stat.tx_packets, stat.tx_bytes, stat.tx_errors)
-        print("+" * 30)
+        print("&" * 50)
