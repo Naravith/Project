@@ -69,20 +69,27 @@ class SimpleMonitor13(simple_switch_13.SimpleSwitch13):
     def _port_stats_reply_handler(self, ev):
         body = ev.msg.body
         print("+" * 50)
-        #print("Data Path:\n{0}".format(self.datapaths))
+        """
+        print("Data Path:\n{0}".format(self.datapaths))
         self.logger.info('%s', json.dumps(ev.msg.to_jsondict(), ensure_ascii=True,indent=3, sort_keys=True))
         print("lo" * 25)
         print(ev.msg.to_jsondict())
         print("lo" * 25)
         print(ev.msg.datapath.id)
         print("lo" * 25)
+        """
+        tmp = ev.msg.to_jsondict()
+        print("Switch: {0}".format(ev.msg.datapath.id))
+        for i in tmp['OFPPortStatsReply']['body']:
+            print("Port:{0} | Tx:{1} Bytes | Tx:{2} packets | Rx:{3} Bytes | Rx:{4} packets".format(i['OFPPortStats']['port_no'], i['OFPPortStats']['tx_bytes'], i['OFPPortStats']['tx_packets'], i['OFPPortStats']['rx_bytes'], i['OFPPortStats']['rx_packets']))
+        print("+" * 50)
         self.logger.info('datapath         port     '
                          'rx-pkts  rx-bytes rx-error '
                          'tx-pkts  tx-bytes tx-error')
         self.logger.info('---------------- -------- '
                          '-------- -------- -------- '
                          '-------- -------- --------')
-        print("*" * 50)
+        #print("*" * 50)
         for stat in sorted(body, key=attrgetter('port_no')):
             self.logger.info('%016x %8x %8d %8d %8d %8d %8d %8d',
                              ev.msg.datapath.id, stat.port_no,
