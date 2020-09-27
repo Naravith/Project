@@ -40,19 +40,19 @@ class ExampleSwitch13(app_manager.RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
-        print("ev {1} : {0}".format(ev, type(ev)))
+        print("ev {1} : {0}".format(ev.data, type(ev)))
         print("-" * 20, "ev" * 5, "-" * 20)
         msg = ev.msg
-        print("msg {1} : {0}".format(msg, type(msg)))
+        print("msg {1} : {0}".format(msg.data, type(msg)))
         print("-" * 20, "msg" * 3, "-" * 20)
         datapath = msg.datapath
-        print("datapath {1} : {0}".format(datapath, type(datapath)))
+        print("datapath {1} : {0}".format(datapath.data, type(datapath)))
         print("-" * 20, "datapath", "-" * 20)
         ofproto = datapath.ofproto
-        print("ofproto {1} : {0}".format(ofproto, type(ofproto)))
+        print("ofproto {1} : {0}".format(ofproto.data, type(ofproto)))
         print("-" * 20, "ofproto", "-" * 20)
         parser = datapath.ofproto_parser
-        print("parser {1} : {0}".format(parser, type(parser)))
+        print("parser {1} : {0}".format(parser.data, type(parser)))
         print("-" * 20, "parser", "-" * 20)
 
         # get Datapath ID to identify OpenFlow switches.
@@ -68,9 +68,12 @@ class ExampleSwitch13(app_manager.RyuApp):
         eth_pkt = pkt.get_protocol(ethernet.ethernet)
         dst = eth_pkt.dst
         src = eth_pkt.src
-
+        print("pkt {1} : {0}".format(pkt, type(pkt)))
+        print("-" * 20, "pkt" * 3, "-" * 20)
         # get the received port number from packet_in message.
         in_port = msg.match['in_port']
+        print("msg.match {1} : {0}".format(msg.match, type(msg.match)))
+        print("-" * 20, "msg.match", "-" * 20)
 
         self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
 
