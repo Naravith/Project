@@ -40,14 +40,28 @@ class ExampleSwitch13(app_manager.RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
+        print("ev {1} : {0}".format(ev, type(ev)))
+        print("-" * 20, "ev" * 5, "-" * 20)
         msg = ev.msg
+        print("msg {1} : {0}".format(msg, type(msg)))
+        print("-" * 20, "msg" * 3, "-" * 20)
         datapath = msg.datapath
+        print("datapath {1} : {0}".format(datapath, type(datapath)))
+        print("-" * 20, "datapath", "-" * 20)
         ofproto = datapath.ofproto
+        print("ofproto {1} : {0}".format(ofproto, type(ofproto)))
+        print("-" * 20, "ofproto", "-" * 20)
         parser = datapath.ofproto_parser
+        print("parser {1} : {0}".format(parser, type(parser)))
+        print("-" * 20, "parser", "-" * 20)
 
         # get Datapath ID to identify OpenFlow switches.
         dpid = datapath.id
+        print("dpid {1} : {0}".format(dpid, type(dpid)))
+        print("-" * 20, "dpid" * 2, "-" * 20)
         self.mac_to_port.setdefault(dpid, {})
+        print("MAC Table : {0}".format(self.mac_to_port))
+        print("-" * 20, "Mac Table", "-" * 20)
 
         # analyse the received packets using the packet library.
         pkt = packet.Packet(msg.data)
