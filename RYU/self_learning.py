@@ -49,26 +49,27 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         dst = eth.dst
         src = eth.src
 
+        """
         if pkt.get_protocol(icmp.icmp):
             print(eth)
         """
+
         if src not in self.hosts:
             self.hosts[src] = (dpid, in_port)
-        """
 
         if arp_pkt:
             self.logger.info("ARP processing")
             print(eth)
             src_ip = arp_pkt.src_ip
             dst_ip = arp_pkt.dst_ip
-            h1, h2 = (0, 0), (0, 0)
+            #h1, h2 = (0, 0), (0, 0)
             #print("Opcode :", arp_pkt.opcode)
             if arp_pkt.opcode == arp.ARP_REQUEST:
                 self.arp_table[src_ip] = src
                 if dst_ip in self.arp_table:
                     dst_mac = self.arp_table[dst_ip]
-                    h1 = self.hosts[src]
-                    h2 = self.hosts[dst_mac]
+                    #h1 = self.hosts[src]
+                    #h2 = self.hosts[dst_mac]
                     if self._mac_learning(dpid, src, in_port):
                         self._arp_forwarding(msg, src_ip, dst_ip, eth)
                 else:
@@ -76,8 +77,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self._arp_forwarding(msg, src_ip, dst_ip, eth)
             elif arp_pkt.opcode == arp.ARP_REPLY:
                 self.arp_table[src_ip] = src
-                h1 = self.hosts[src]
-                h2 = self.hosts[dst]
+                #h1 = self.hosts[src]
+                #h2 = self.hosts[dst]
                 if self._mac_learning(dpid, src, in_port):
                     self._arp_forwarding(msg, src_ip, dst_ip, eth)
             #print("Host : {0}\nH1 : {1} | H2 : {2}".format(self.hosts, h1, h2))
