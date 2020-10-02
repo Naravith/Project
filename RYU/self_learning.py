@@ -85,9 +85,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 if self._mac_learning(dpid, src, in_port):
                     print("FLOOD!!!!!!! for find", dst_ip)
                     self._arp_forwarding(msg, src_ip, dst_ip, eth)
-                print("ARP_Table :", self.arp_table)
-                print("MAC_Table :", self.mac_to_port)
-                print("-" * 45)
+            print("ARP_Table :", self.arp_table)
+            print("MAC_Table :", self.mac_to_port)
+            print("-" * 45)
                 #self._flood(msg)
 
             #print("Host : {0}\nH1 : {1} | H2 : {2}".format(self.hosts, h1, h2))
