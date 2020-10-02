@@ -27,8 +27,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         match = parser.OFPMatch()
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
                                           ofproto.OFPCML_NO_BUFFER)]
-        self.add_flow(datapath, 0, match, actions)
-        self.logger.info("Switch: %s  Connected", dpid)
+        self._add_flow(datapath, 0, match, actions)
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
@@ -45,8 +44,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         if isinstance(arp_pkt, arp.arp):
             self.logger.info("ARP processing")
-            if self.mac_learning(dpid, eth.src, in_port):
-                self.arp_forwarding(msg, arp_pkt.src_ip, arp_pkt.dst_ip, eth)
+            if self._mac_learning(dpid, eth.src, in_port):
+                self._arp_forwarding(msg, arp_pkt.src_ip, arp_pkt.dst_ip, eth)
 
         if isinstance(ip_pkt, ipv4.ipv4):
             self.logger.info("IPv4 Processing")
@@ -57,30 +56,30 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     out_port = mac_to_port_table[eth.dst]
                     actions = [parser.OFPActionOutput(out_port)]
                     match = parser.OFPMatch(in_port=in_port, eth_dst=eth.dst)
-                    self.add_flow(datapath, 1, match, actions)
-                    self.send_packet_out(datapath, msg.buffer_id, in_port,
+                    self._add_flow(datapath, 1, match, actions)
+                    self._send_packet_out(datapath, msg.buffer_id, in_port,
                                          out_port, msg.data)
                     
                 # dont know destination
                 else:
-                    if self.mac_learning(dpid, eth.src, in_port):
-                        self.flood(msg)
+                    if self._mac_learning(dpid, eth.src, in_port):
+                        self._flood(msg)
     
     def _arp_forwarding(self, msg, src_ip, dst_ip, eth_pkt):
         datapath = msg.datapath
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
 
-        out_port = self.mac_to_port[datapath.id].get(eth_pkt.dst)
+        out_port = self._mac_to_port[datapath.id].get(eth_pkt.dst)
         if out_port is not None:
             match = parser.OFPMatch(in_port=in_port, eth_dst=eth_pkt.dst,
                                     eth_type=eth_pkt.ethertype)
             actions = [parser.OFPActionOutput(out_port)]
-            self.add_flow(datapath, 1, match, actions)
-            self.send_packet_out(datapath, msg.buffer_id, in_port,
+            self._add_flow(datapath, 1, match, actions)
+            self._send_packet_out(datapath, msg.buffer_id, in_port,
                                  out_port, msg.data)
         else:
-            self.flood(msg)
+            self._flood(msg)
 
     def _mac_learning(self, dpid, src_mac, in_port):
         self.mac_to_port.setdefault(dpid, {})
