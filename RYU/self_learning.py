@@ -9,6 +9,7 @@ from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import arp
 from ryu.lib.packet import ipv4
+from ryu.lib.packet import icmp
 from ryu import utils
 
 class SelfLearningBYLuxuss(app_manager.RyuApp):
@@ -47,6 +48,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         dst = eth.dst
         src = eth.src
 
+        print(pkt.get_protocol(icmp.icmp))
+
         if src not in self.hosts:
             self.hosts[src] = (dpid, in_port)
 
@@ -55,7 +58,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             src_ip = arp_pkt.src_ip
             dst_ip = arp_pkt.dst_ip
             h1, h2 = (0, 0), (0, 0)
-            print("Opcode :", arp_pkt.opcode)
+            #print("Opcode :", arp_pkt.opcode)
             if arp_pkt.opcode == arp.ARP_REQUEST:
                 self.arp_table[src_ip] = src
                 if dst_ip in self.arp_table:
@@ -73,10 +76,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 h2 = self.hosts[dst]
                 if self._mac_learning(dpid, src, in_port):
                     self._arp_forwarding(msg, src_ip, dst_ip, eth)
-            print("Host : {0}\nH1 : {1} | H2 : {2}".format(self.hosts, h1, h2))
-            print("ARP_Table :", self.arp_table)
-            #if self._mac_learning(dpid, src, in_port):
-            #    self._arp_forwarding(msg, src_ip, dst_ip, eth)
+            #print("Host : {0}\nH1 : {1} | H2 : {2}".format(self.hosts, h1, h2))
+            #print("ARP_Table :", self.arp_table)
 
         if ip_pkt:
             self.logger.info("IPv4 Processing")
