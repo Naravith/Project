@@ -75,8 +75,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if self._mac_learning(dpid, src, in_port):
                         self._arp_forwarding(msg, src_ip, dst_ip, eth)
                 else:
-                    print(self._mac_learning(dpid, src, in_port))
-                    print(src in self.mac_to_port[dpid])
+                    #print(self._mac_learning(dpid, src, in_port))
+                    #print(src in self.mac_to_port[dpid])
                     if self._mac_learning(dpid, src, in_port):
                         self._arp_forwarding(msg, src_ip, dst_ip, eth)
 
@@ -129,6 +129,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         if src_mac in self.mac_to_port[dpid]:
             if in_port != self.mac_to_port[dpid][src_mac]:
                 return False
+            return True
         else:
             self.mac_to_port[dpid][src_mac] = in_port
             return True
