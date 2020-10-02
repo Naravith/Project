@@ -48,7 +48,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         dst = eth.dst
         src = eth.src
 
-        print(pkt.get_protocol(icmp.icmp))
+        if pkt.get_protocol(icmp.icmp):
+            print(eth)
 
         if src not in self.hosts:
             self.hosts[src] = (dpid, in_port)
