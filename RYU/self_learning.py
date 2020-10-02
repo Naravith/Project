@@ -17,6 +17,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def __init__(self, *args, **kwargs):
         super(SelfLearningBYLuxuss, self).__init__(*args, **kwargs)
         self.mac_to_port = {}
+        self.arp_table = {}
+        self.hosts = {}
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
@@ -28,7 +30,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
                                           ofproto.OFPCML_NO_BUFFER)]
         self._add_flow(datapath, 0, match, actions)
-        print("Switch {0} Connected".format(datapath.id))
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
@@ -43,39 +44,58 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         arp_pkt = pkt.get_protocol(arp.arp)
         ip_pkt = pkt.get_protocol(ipv4.ipv4)
 
-        if isinstance(arp_pkt, arp.arp):
-            self.logger.info("ARP processing")
-            print("ARP Opcode :", arp_pkt.opcode)
-            print("1", eth)
-            print("2", pkt.get_protocols(ethernet.ethernet))
-            print("arp src :",arp_pkt.src_ip, "| arp dst :", arp_pkt.dst_ip)
-            if self._mac_learning(dpid, eth.src, in_port):
-                self._arp_forwarding(msg, arp_pkt.src_ip, arp_pkt.dst_ip, eth)
+        dst = eth.dst
+        src = eth.src
 
-        if isinstance(ip_pkt, ipv4.ipv4):
+        if src not in self.hosts:
+            self.hosts[src] = (dpid, in_port)
+
+        if arp_pkt:
+            self.logger.info("ARP processing")
+            src_ip = arp_pkt.src_ip
+            dst_ip = arp_pkt.dst_ip
+            h1, h2 = 'Default', 'Default'
+            print("Opcode :", arp_pkt.opcode)
+            if arp_pkt.opcode == arp.ARP_REQUEST:
+                if dst_ip in self.arp_table:
+                    self.arp_table[src_ip] = src
+                    dst_mac = self.arp_table[dst_ip]
+                    h1 = self.hosts[src]
+                    h2 = self.hosts[dst_mac]
+                    self._arp_forwarding(msg, src_ip, dst_ip, eth)
+                else:
+                    self._flood(msg)
+            elif arp_pkt.opcode == arp.ARP_REPLY:
+                self.arp_table[src_ip] = src
+                h1 = self.hosts[src]
+                h2 = self.hosts[dst]
+                self._arp_forwarding(msg, src_ip, dst_ip, eth)
+            print("Host : {0}\nH1 : {1} | H2 : {2}".format(h1, h2))
+            print("ARP_Table :", self.arp_table)
+            #if self._mac_learning(dpid, src, in_port):
+            #    self._arp_forwarding(msg, src_ip, dst_ip, eth)
+
+        if ip_pkt:
             self.logger.info("IPv4 Processing")
             mac_to_port_table = self.mac_to_port.get(dpid)
             if mac_to_port_table:
-                # know destination
                 if eth.dst in mac_to_port_table:
-                    out_port = mac_to_port_table[eth.dst]
+                    out_port = mac_to_port_table[dst]
                     actions = [parser.OFPActionOutput(out_port)]
-                    match = parser.OFPMatch(in_port=in_port, eth_dst=eth.dst)
+                    match = parser.OFPMatch(in_port=in_port, eth_dst=dst)
                     self._add_flow(datapath, 1, match, actions)
                     self._send_packet_out(datapath, msg.buffer_id, in_port,
                                          out_port, msg.data)
-                    
-                # dont know destination
                 else:
-                    if self._mac_learning(dpid, eth.src, in_port):
-                        self._flood(msg, in_port)
+                    if self._mac_learning(dpid, src, in_port):
+                        self._flood(msg)
     
     def _arp_forwarding(self, msg, src_ip, dst_ip, eth_pkt):
         datapath = msg.datapath
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
 
-        out_port = self.mac_to_port[datapath.id].get(eth_pkt.dst)
+        out_port = self._mac_to_port[datapath.id].get(eth_pkt.dst)
         if out_port is not None:
             match = parser.OFPMatch(in_port=in_port, eth_dst=eth_pkt.dst,
                                     eth_type=eth_pkt.ethertype)
@@ -84,13 +104,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self._send_packet_out(datapath, msg.buffer_id, in_port,
                                  out_port, msg.data)
         else:
-            self._flood(msg, in_port)
+            self._flood(msg)
 
     def _mac_learning(self, dpid, src_mac, in_port):
         self.mac_to_port.setdefault(dpid, {})
-        print("Swtich :", dpid, "| Src :", src_mac, "| Port", in_port)
-        print(self.mac_to_port)
-        # check mac address
         if src_mac in self.mac_to_port[dpid]:
             if in_port != self.mac_to_port[dpid][src_mac]:
                 return False
@@ -98,7 +115,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self.mac_to_port[dpid][src_mac] = in_port
             return True
 
-    def _flood(self, msg, in_port):
+    def _flood(self, msg):
         datapath = msg.datapath
         ofproto = datapath.ofproto
         out = self._build_packet_out(datapath, ofproto.OFP_NO_BUFFER,
