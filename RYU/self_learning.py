@@ -49,23 +49,13 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         dst = eth.dst
         src = eth.src
 
-        """
-        if pkt.get_protocol(icmp.icmp):
-            print(eth)
-        """
-
         if src not in self.hosts:
             self.hosts[src] = (dpid, in_port)
 
         if arp_pkt:
             self.logger.info("ARP processing")
-            print("ETH :", eth)
-            print("ARP :", arp_pkt)
             src_ip = arp_pkt.src_ip
             dst_ip = arp_pkt.dst_ip
-            #h1, h2 = (0, 0), (0, 0)
-            print("Opcode :", arp_pkt.opcode)
-            print("src_ip : {0} | dst_ip : {1}".format(src_ip, dst_ip))
             self.arp_table[src_ip] = src
             if arp_pkt.opcode == arp.ARP_REQUEST:
                 if dst_ip in self.arp_table:
@@ -75,8 +65,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if self._mac_learning(dpid, src, in_port):
                         self._arp_forwarding(msg, src_ip, dst_ip, eth)
                 else:
-                    #print(self._mac_learning(dpid, src, in_port))
-                    #print(src in self.mac_to_port[dpid])
                     if self._mac_learning(dpid, src, in_port):
                         self._arp_forwarding(msg, src_ip, dst_ip, eth)
 
@@ -85,16 +73,11 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 #h2 = self.hosts[dst]
                 if self._mac_learning(dpid, src, in_port):
                     self._arp_forwarding(msg, src_ip, dst_ip, eth)
-            print("ARP_Table :", self.arp_table)
-            print("MAC_Table :", self.mac_to_port)
-            print("-" * 45)
-                #self._flood(msg)
-
-            #print("Host : {0}\nH1 : {1} | H2 : {2}".format(self.hosts, h1, h2))
-            #print("ARP_Table :", self.arp_table)
 
         if ip_pkt:
             self.logger.info("IPv4 Processing")
+            for i in range(1, 7):
+                print("Switch {0} | {1} | {2}".format(i, i in self.mac_to_port, self.mac_to_port.get(i)))
             mac_to_port_table = self.mac_to_port.get(dpid)
             if mac_to_port_table:
                 if eth.dst in mac_to_port_table:
