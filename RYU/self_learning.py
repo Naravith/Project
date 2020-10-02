@@ -66,8 +66,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             #h1, h2 = (0, 0), (0, 0)
             print("Opcode :", arp_pkt.opcode)
             print("src_ip : {0} | dst_ip : {1}".format(src_ip, dst_ip))
+            self.arp_table[src_ip] = src
             if arp_pkt.opcode == arp.ARP_REQUEST:
-                self.arp_table[src_ip] = src
                 if dst_ip in self.arp_table:
                     dst_mac = self.arp_table[dst_ip]
                     #h1 = self.hosts[src]
@@ -75,15 +75,16 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if self._mac_learning(dpid, src, in_port):
                         self._arp_forwarding(msg, src_ip, dst_ip, eth)
                 else:
+                    '''
                     if self._mac_learning(dpid, src, in_port):
                         self._arp_forwarding(msg, src_ip, dst_ip, eth)
+                    '''
+                    self.mac_to_port.setdefault(dpid, {})
+                    self._flood(msg)
             elif arp_pkt.opcode == arp.ARP_REPLY:
-                self.arp_table[src_ip] = src
                 #h1 = self.hosts[src]
                 #h2 = self.hosts[dst]
-                self.mac_to_port.setdefault(dpid, {})
                 if self._mac_learning(dpid, src, in_port):
-                    print("FLOOD!!!!!!! for find", dst_ip)
                     self._arp_forwarding(msg, src_ip, dst_ip, eth)
             print("ARP_Table :", self.arp_table)
             print("MAC_Table :", self.mac_to_port)
