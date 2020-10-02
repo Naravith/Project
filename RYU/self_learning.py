@@ -54,7 +54,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self.logger.info("ARP processing")
             src_ip = arp_pkt.src_ip
             dst_ip = arp_pkt.dst_ip
-            h1, h2 = 'Default', 'Default'
+            h1, h2 = (0, 0), (0, 0)
             print("Opcode :", arp_pkt.opcode)
             if arp_pkt.opcode == arp.ARP_REQUEST:
                 if dst_ip in self.arp_table:
@@ -70,7 +70,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 h1 = self.hosts[src]
                 h2 = self.hosts[dst]
                 self._arp_forwarding(msg, src_ip, dst_ip, eth)
-            print("Host : {0}\nH1 : {1} | H2 : {2}".format(h1, h2))
+            print("Host : {0}\nH1 : {1} | H2 : {2}".format(self.hosts, h1, h2))
             print("ARP_Table :", self.arp_table)
             #if self._mac_learning(dpid, src, in_port):
             #    self._arp_forwarding(msg, src_ip, dst_ip, eth)
