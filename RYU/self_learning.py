@@ -98,10 +98,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         datapath = msg.datapath
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
-        out = parser.OFPPacketOut(datapath=datapath,
-                                  buffer_id=ofproto.OFP_NO_BUFFER,
-                                  in_port=in_port, actions=ofproto.OFPP_FLOOD,
-                                  data=msg.data)
+        out = self._build_packet_out(datapath, ofproto.OFP_NO_BUFFER,
+                                     ofproto.OFPP_CONTROLLER,
+                                     ofproto_OFPP_FLOOD, msg.data)
         datapath.send_msg(out)
         self.logger.info("Flooding msg")
 
