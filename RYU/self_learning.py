@@ -45,6 +45,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         if isinstance(arp_pkt, arp.arp):
             self.logger.info("ARP processing")
+            print("ARP Opcode :", arp_pkt.opcode)
+            print("1", eth)
+            print("2", pkt.get_protocols(ethernet.ethernet))
+            print("arp src :",arp_pkt.src_ip, "| arp dst :", arp_pkt.dst_ip)
             if self._mac_learning(dpid, eth.src, in_port):
                 self._arp_forwarding(msg, arp_pkt.src_ip, arp_pkt.dst_ip, eth)
 
