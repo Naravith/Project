@@ -19,10 +19,11 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.mac_to_port = {}
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
-    def _switch_features_handler(self, ev):
+    def switch_features_handler(self, ev):
         datapath = ev.msg.datapath
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
+        dpid = datapath.id
 
         match = parser.OFPMatch()
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
@@ -66,7 +67,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if self.mac_learning(dpid, eth.src, in_port):
                         self.flood(msg)
     
-    def _arp_forwarding(self, msg, src_ip, dst_ip, eth_pkt):
+    def arp_forwarding(self, msg, src_ip, dst_ip, eth_pkt):
         datapath = msg.datapath
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
@@ -82,7 +83,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         else:
             self.flood(msg)
 
-    def _mac_learning(self, dpid, src_mac, in_port):
+    def mac_learning(self, dpid, src_mac, in_port):
         self.mac_to_port.setdefault(dpid, {})
         # check mac address
         if src_mac in self.mac_to_port[dpid]:
@@ -92,7 +93,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self.mac_to_port[dpid][src_mac] = in_port
             return True
 
-    def _flood(self, msg):
+    def flood(self, msg):
         datapath = msg.datapath
         ofproto = datapath.ofproto
         out = self._build_packet_out(datapath, ofproto.OFP_NO_BUFFER,
@@ -101,7 +102,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         datapath.send_msg(out)
         self.logger.info("Flooding msg")
 
-    def _build_packet_out(self, datapath, buffer_id, src_port, dst_port, data):
+    def build_packet_out(self, datapath, buffer_id, src_port, dst_port, data):
         actions = []
         if dst_port:
             actions.append(datapath.ofproto_parser.OFPActionOutput(dst_port))
@@ -117,13 +118,13 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             data=msg_data, in_port=src_port, actions=actions)
         return out
 
-    def _send_packet_out(self, datapath, buffer_id, src_port, dst_port, data):
+    def send_packet_out(self, datapath, buffer_id, src_port, dst_port, data):
         out = self._build_packet_out(datapath, buffer_id,
                                      src_port, dst_port, data)
         if out:
             datapath.send_msg(out)
 
-    def _add_flow(self, datapath, priority, match, actions):
+    def add_flow(self, datapath, priority, match, actions):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 

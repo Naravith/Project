@@ -33,7 +33,7 @@ class SimpleMonitor13(simple_switch_13.SimpleSwitch13):
         while True:
             for dp in self.datapaths.values():
                 self._request_stats(dp)
-            hub.sleep(10)
+            hub.sleep(1)
 
     def _request_stats(self, datapath):
         self.logger.debug('send stats request: %016x', datapath.id)
@@ -80,6 +80,7 @@ class SimpleMonitor13(simple_switch_13.SimpleSwitch13):
         """
         tmp = ev.msg.to_jsondict()
         print("Switch: {0}".format(ev.msg.datapath.id))
+        print(tmp)
         for i in tmp['OFPPortStatsReply']['body']:
             print("Port:{0} | Tx:{1} Bytes | Tx:{2} packets | Rx:{3} Bytes | Rx:{4} packets".format(i['OFPPortStats']['port_no'], i['OFPPortStats']['tx_bytes'], i['OFPPortStats']['tx_packets'], i['OFPPortStats']['rx_bytes'], i['OFPPortStats']['rx_packets']))
         print("+" * 50)

@@ -17,15 +17,20 @@ class ExampleSwitch13(app_manager.RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
+        print("-" * 30)
+        print("Swtich Features " * 3)
         datapath = ev.msg.datapath
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
+        print("datapath.id {0} : {1}".format(type(datapath.id), datapath.id))
+        print(datapath.__dict__)
 
         # install the table-miss flow entry.
         match = parser.OFPMatch()
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
                                           ofproto.OFPCML_NO_BUFFER)]
         self.add_flow(datapath, 0, match, actions)
+        print("-" * 30)
 
     def add_flow(self, datapath, priority, match, actions):
         ofproto = datapath.ofproto
@@ -40,19 +45,19 @@ class ExampleSwitch13(app_manager.RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
-        print("ev {1} : {0}".format(ev.data, type(ev)))
+        print("ev {1} : {0}".format(ev.__dict__, type(ev.__dict__)))
         print("-" * 20, "ev" * 5, "-" * 20)
         msg = ev.msg
-        print("msg {1} : {0}".format(msg.data, type(msg)))
+        print("msg {1} : {0}".format(msg.data, type(msg.data)))
         print("-" * 20, "msg" * 3, "-" * 20)
         datapath = msg.datapath
-        print("datapath {1} : {0}".format(datapath.data, type(datapath)))
+        print("datapath {1} : {0}".format(datapath.__dict__, type(datapath.__dict__)))
         print("-" * 20, "datapath", "-" * 20)
         ofproto = datapath.ofproto
-        print("ofproto {1} : {0}".format(ofproto.data, type(ofproto)))
+        print("ofproto {1} : {0}".format(ofproto, type(ofproto)))
         print("-" * 20, "ofproto", "-" * 20)
         parser = datapath.ofproto_parser
-        print("parser {1} : {0}".format(parser.data, type(parser)))
+        print("parser {1} : {0}".format(parser, type(parser)))
         print("-" * 20, "parser", "-" * 20)
 
         # get Datapath ID to identify OpenFlow switches.
