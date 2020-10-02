@@ -28,6 +28,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
                                           ofproto.OFPCML_NO_BUFFER)]
         self._add_flow(datapath, 0, match, actions)
+        print("Switch {0} Connected".format(datapath.id))
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
@@ -63,7 +64,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 # dont know destination
                 else:
                     if self._mac_learning(dpid, eth.src, in_port):
-                        self._flood(msg)
+                        self._flood(msg, in_port)
     
     def _arp_forwarding(self, msg, src_ip, dst_ip, eth_pkt):
         datapath = msg.datapath
@@ -79,7 +80,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self._send_packet_out(datapath, msg.buffer_id, in_port,
                                  out_port, msg.data)
         else:
-            self._flood(msg)
+            self._flood(msg, in_port)
 
     def _mac_learning(self, dpid, src_mac, in_port):
         self.mac_to_port.setdefault(dpid, {})
@@ -91,12 +92,14 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self.mac_to_port[dpid][src_mac] = in_port
             return True
 
-    def _flood(self, msg):
+    def _flood(self, msg, in_port):
         datapath = msg.datapath
         ofproto = datapath.ofproto
-        out = self._build_packet_out(datapath, ofproto.OFP_NO_BUFFER,
-                                     ofproto.OFPP_CONTROLLER,
-                                     ofproto.OFPP_FLOOD, msg.data)
+        parser = datapath.ofproto_parser
+        out = parser.OFPPacketOut(datapath=datapath,
+                                  buffer_id=ofproto.OFP_NO_BUFFER,
+                                  in_port=in_port, actions=ofproto.OFPP_FLOOD,
+                                  data=msg.data)
         datapath.send_msg(out)
         self.logger.info("Flooding msg")
 
