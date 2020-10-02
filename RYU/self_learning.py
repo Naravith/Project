@@ -71,7 +71,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
 
-        out_port = self._mac_to_port[datapath.id].get(eth_pkt.dst)
+        out_port = self.mac_to_port[datapath.id].get(eth_pkt.dst)
         if out_port is not None:
             match = parser.OFPMatch(in_port=in_port, eth_dst=eth_pkt.dst,
                                     eth_type=eth_pkt.ethertype)
@@ -84,6 +84,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     def _mac_learning(self, dpid, src_mac, in_port):
         self.mac_to_port.setdefault(dpid, {})
+        print("Swtich :", dpid, "| Src :", src_mac, "| Port", in_port)
+        print(self.mac_to_port)
         # check mac address
         if src_mac in self.mac_to_port[dpid]:
             if in_port != self.mac_to_port[dpid][src_mac]:
