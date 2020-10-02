@@ -31,6 +31,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
                                           ofproto.OFPCML_NO_BUFFER)]
         self._add_flow(datapath, 0, match, actions)
+        print("Switch : {0} Connected".format(datapath.id))
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
@@ -50,12 +51,14 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         if pkt.get_protocol(icmp.icmp):
             print(eth)
-
+        """
         if src not in self.hosts:
             self.hosts[src] = (dpid, in_port)
+        """
 
         if arp_pkt:
             self.logger.info("ARP processing")
+            print(eth)
             src_ip = arp_pkt.src_ip
             dst_ip = arp_pkt.dst_ip
             h1, h2 = (0, 0), (0, 0)
