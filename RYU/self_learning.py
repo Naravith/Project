@@ -28,6 +28,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
                                           ofproto.OFPCML_NO_BUFFER)]
         self._add_flow(datapath, 0, match, actions)
+        print("Switch {0} Connected".format(datapath.id))
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
@@ -70,7 +71,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
 
-        out_port = self._mac_to_port[datapath.id].get(eth_pkt.dst)
+        out_port = self.mac_to_port[datapath.id].get(eth_pkt.dst)
         if out_port is not None:
             match = parser.OFPMatch(in_port=in_port, eth_dst=eth_pkt.dst,
                                     eth_type=eth_pkt.ethertype)
@@ -83,6 +84,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     def _mac_learning(self, dpid, src_mac, in_port):
         self.mac_to_port.setdefault(dpid, {})
+        print("Swtich :", dpid, "| Src :", src_mac, "| Port", in_port)
+        print(self.mac_to_port)
         # check mac address
         if src_mac in self.mac_to_port[dpid]:
             if in_port != self.mac_to_port[dpid][src_mac]:
