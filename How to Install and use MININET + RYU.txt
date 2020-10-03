@@ -1,0 +1,84 @@
+ifconfig   : show various interface detail
+
+ovs-vsctl show  : openVswitch detail
+
+ovs-ofctl -O OpenFlow13 dump-ports br0  : look at ports on bridge 0
+
+ovs-ofctl -O OpenFlow13 dump-flows br0  : look at flowtable
+
+ovs-vsctl set bridge br0 stp_enable=true : enable spanning-tree protocol
+
+cd distribution-karaf-0.5.2-Boron-SR2 	|
+./bin/kraf				| 2 lines for Open ODL
+
+ovs-vsctl set-controller br0 tcp:192.168.122.164:6633 (ip Ubuntu)
+
+http://<ip Ubuntu>:8181/index.html : open in firefox for GUI
+
+For Save Config Ubuntu
+/bin
+/boot
+/dev
+/etc
+/gns3
+/gns3volumes
+/home
+/lib
+/lib64
+/root
+/sbin
+/var
+/usr
+
+
+For ODL
+- apt-get update
+- apt-get install nano
+- apt-get install python
+- apt-get install python3
+- apt-get install default-jre-headless
+- export JAVA_HOME=/usr/lib/jvm/default-java
+- apt-get install wget
+- wget https://nexus.opendaylight.org/content/repositories/public/org/opendaylight/integration/distribution-karaf/0.5.3-Boron-SR3/distribution-karaf-0.5.3-Boron-SR3.zip
+- apt-get install unzip
+- unzip distribution-karaf-0.5.3-Boron-SR3.zip
+- cd distribution-karaf-0.5.3-Boron-SR3
+- ./bin/karaf
+- feature:install odl-restconf odl-l2switch-switch odl-mdsal-apidocs odl-dlux-all
+- feature:install odl-restconf-all
+- feature:install odl-openflowplugin-all
+- feature:install odl-l2switch-all
+
+For Mininet
+- sudo mn --controller=remote,ip=<controller ip> --switch=ovsk,protocols=OpenFlow13 --mac --topo=linear,4
+- sudo mn --custom topology_for_project.py --topo mytopo --mac --switch=ovsk,protocols=OpenFlow13 --link=tc --controller=remote,ip=<controller ip>
+- net  | show connection between devices
+- dump | show ip devices
+- sudo mn -c | clean
+
+For RYU
+- cd /usr/local/lib/python3.8/dist-packages/ryu/app
+- sudo ryu run <python file>
+- ryu run gui_topology/gui_topology.py simple_switch_13.py --observe-links | for GUI in Firefox
+- ryu-manager /home/sdn/ryu/ryu/app/gui_topology/gui_topology.py self_learning.py --observe-links | run 2 file
+
+
+For ssh
+- ssh -l <VM's username> <VM's ip>
+- cd mininet/custom
+- sudo mn --custom <python file> --topo mytopo
+
+For no ip Ubuntu <Angryyyyy!!!!>
+- sudo ifconfig eth0 down
+- sudo ip link set eth0 down
+- sudo ifconfig eth0 up
+- sudo ip link set eth0 up
+- sudo dhclient -v eth0		<DHCP>
+- sudo ifconfig eth0 w.x.y.z    <Static>
+
+For static ip in ECC
+https://www.howtoforge.com/linux-basics-set-a-static-ip-on-ubuntu
+
+หลังจาก set netplan:
+sudo netplan apply
+sudo netplan --debug apply
