@@ -30,7 +30,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def switch_enter_handler(self, ev):
         switch = ev.switch.dp
         ofp_parser = switch.ofproto_parser
-        print("Object Switch :", switch.__dict__)
+        print("Object Switch {0} : {1}".format(switch.id, switch.__dict__))
         if switch.id not in self.switches:
             self.switches.append(switch.id)
             self.datapath_list[switch.id] = switch
@@ -39,7 +39,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             switch.send_msg(req)
         print("Switchs {0} Enter.\nDatapath_List :".format(self.switches))
         for i in self.datapath_list:
-            print("Switch {0} -> {1}".format(i, self.datapath_list[i]))
+            print("Switch {0} -> {1}".format(i, self.datapath_list[i].__dict__))
+        print("-" * 40)
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
