@@ -20,6 +20,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.mac_to_port = {}
         self.arp_table = {}
         self.hosts = {}
+        self.check_first_dfs = 1
+        self.all_path = {}
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
@@ -32,6 +34,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                                           ofproto.OFPCML_NO_BUFFER)]
         self._add_flow(datapath, 0, match, actions)
         print("Switch : {0} Connected".format(datapath.id))
+        if self.check_first_dfs:
+            self.check_first_dfs = 0
+            self._get_paths()
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
@@ -76,8 +81,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         if ip_pkt:
             self.logger.info("IPv4 Processing")
+            '''
             for i in range(1, 7):
                 print("Switch {0} | {1} | {2}".format(i, i in self.mac_to_port, self.mac_to_port.get(i)))
+            '''
             mac_to_port_table = self.mac_to_port.get(dpid)
             if mac_to_port_table:
                 if eth.dst in mac_to_port_table:
@@ -90,6 +97,36 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 else:
                     if self._mac_learning(dpid, src, in_port):
                         self._flood(msg)
+
+    def _get_paths(self):
+        topo = [
+                [2, 3],
+                [1, 3],
+                [1, 2, 6],
+                [5, 6],
+                [4, 6],
+                [3, 4, 5]
+        ]
+        for x in range(1, 7):
+            for y in range(1, 7):
+                if x != y:
+                    key_link, mark, path = str(x) + '->' + str(y), [0] * 6, []
+                    self.all_path.setdefault(key_link, {})
+                    mark[x - 1] = 1
+                    self._dfs(x, y, [x], topo, mark, path)
+                    self.all_path[key_link] = sorted(path, key = len)
+
+    def _dfs(self, start, end, k, topo, mark, path):
+        if k[-1] == end:
+            if len(k) == len(set(k)):
+                path.append(k[:])
+        for i in range(len(topo[start - 1])):
+            if mark[topo[start - 1][i] - 1] == 0:
+                mark[topo[start - 1][i] - 1] = 1
+                k.append(topo[start - 1][i])
+                self._dfs(topo[start - 1][i], end, k, topo, mark, path)
+                k.pop()
+                mark[topo[start - 1][i] - 1] = 0
     
     def _arp_forwarding(self, msg, src_ip, dst_ip, eth_pkt):
         datapath = msg.datapath
