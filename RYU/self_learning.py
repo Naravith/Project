@@ -10,6 +10,7 @@ from ryu.lib.packet import ethernet
 from ryu.lib.packet import arp
 from ryu.lib.packet import ipv4
 from ryu.lib.packet import icmp
+from ryu.topology import event
 from ryu import utils
 
 class SelfLearningBYLuxuss(app_manager.RyuApp):
@@ -22,6 +23,21 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.hosts = {}
         self.check_first_dfs = 1
         self.all_path = {}
+        self.datapath_list = {}
+        self.switches = []
+
+    @set_ev_cls(event.EventSwitchEnter)
+    def switch_enter_handler(self, ev):
+        switch = ev.switch.dp
+        ofp_parser = switch.ofproto_parser
+        print("Switch {0} Enter.".format(ev.msg.datapath.id))
+
+        if switch.id not in self.switches:
+            self.switches.append(switch.id)
+            self.datapath_list[switch.id] = switch
+
+            req = ofp_parser.OFPPortDescStatsRequest(switch)
+            switch.send_msg(req)
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
