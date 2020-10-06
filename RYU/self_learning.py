@@ -11,6 +11,7 @@ from ryu.lib.packet import arp
 from ryu.lib.packet import ipv4
 from ryu.lib.packet import icmp
 from ryu.topology import event
+from collections import defaultdict
 from ryu import utils
 
 class SelfLearningBYLuxuss(app_manager.RyuApp):
