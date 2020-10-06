@@ -30,7 +30,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def switch_enter_handler(self, ev):
         switch = ev.switch.dp
         ofp_parser = switch.ofproto_parser
-        print("Switch {0} Enter.".format(ev.msg.datapath.id))
 
         if switch.id not in self.switches:
             self.switches.append(switch.id)
