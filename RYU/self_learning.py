@@ -37,6 +37,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
             req = ofp_parser.OFPPortDescStatsRequest(switch)
             switch.send_msg(req)
+        print("Switchs : {0}\nDatapath_List : {1}".format(self.switches, self.datapath_list))
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
