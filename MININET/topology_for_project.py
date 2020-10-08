@@ -40,6 +40,7 @@ class MyTopo( Topo ):
 
         #Link between Circle 1 & Circle 2
         self.addLink(Switch[2], Switch[5], bw = bw_fast_eth)
+        self.addLink(Switch[1], Switch[4], bw = bw_fast_eth)
         
 
 topos = { 'mytopo': ( lambda: MyTopo() ) }
