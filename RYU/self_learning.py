@@ -32,17 +32,19 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def switch_enter_handler(self, ev):
         switch = ev.switch.dp
         ofp_parser = switch.ofproto_parser
-        print("Object Switch {0} : {1}".format(switch.id, switch.__dict__))
+        #print("Object Switch {0} : {1}".format(switch.id, switch.__dict__))
         if switch.id not in self.switches:
             self.switches.append(switch.id)
             self.datapath_list[switch.id] = switch
 
             req = ofp_parser.OFPPortDescStatsRequest(switch)
             switch.send_msg(req)
+        '''
         print("Switchs {0} Enter.\nDatapath_List :".format(self.switches))
         for i in self.datapath_list:
             print("Switch {0} -> {1}".format(i, self.datapath_list[i].__dict__))
         print("-" * 40)
+        '''
 
     @set_ev_cls(event.EventLinkAdd, MAIN_DISPATCHER)
     def link_add_handler(self, ev):
@@ -50,8 +52,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         s2 = ev.link.dst
         self.adjacency[s1.dpid][s2.dpid] = s1.port_no
         self.adjacency[s2.dpid][s1.dpid] = s2.port_no
-        print("s1 : {0}\ns2 : {1}".format(s1, s2))
-        print("adj :", self.adjacency)
+        #print("s1 : {0}\ns2 : {1}".format(s1, s2))
+        #print("adj :", self.adjacency)
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
@@ -131,10 +133,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def _get_paths(self):
         topo = [
                 [2, 3],
-                [1, 3],
+                [1, 3, 5],
                 [1, 2, 6],
                 [5, 6],
-                [4, 6],
+                [2, 4, 6],
                 [3, 4, 5]
         ]
         for x in range(1, 7):
@@ -145,6 +147,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     mark[x - 1] = 1
                     self._dfs(x, y, [x], topo, mark, path)
                     self.all_path[key_link] = sorted(path, key = len)
+        
+        for i in self.all_path:
+            print(i, self.all_path[i])
 
     def _dfs(self, start, end, k, topo, mark, path):
         if k[-1] == end:
@@ -212,6 +217,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def _send_packet_out(self, datapath, buffer_id, src_port, dst_port, data):
         out = self._build_packet_out(datapath, buffer_id,
                                      src_port, dst_port, data)
+        print("dpid : {0} | src : {1} | dst : {2}\nout : {3}".format(datapath.id, src_port, dst_port, out))
         if out:
             datapath.send_msg(out)
 
