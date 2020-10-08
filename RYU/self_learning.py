@@ -14,6 +14,8 @@ from ryu.topology import event
 from collections import defaultdict
 from ryu import utils
 
+import time
+
 class SelfLearningBYLuxuss(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 
@@ -27,6 +29,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.datapath_list = {}
         self.switches = []
         self.adjacency = defaultdict(dict)
+        self.time_start = time.time()
+        self.check_time = True
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -89,7 +93,14 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         if src not in self.hosts:
             self.hosts[src] = (dpid, in_port)
 
-        if arp_pkt:
+        print(time.time() - self.time_start)
+        if (time.time() - self.time_start) > 275.0:
+            self.check_time = False
+
+        if not self.check_time:
+            self._del_flow(datapath)
+
+        if arp_pkt and self.check_time:
             self.logger.info("ARP processing")
             src_ip = arp_pkt.src_ip
             dst_ip = arp_pkt.dst_ip
@@ -111,7 +122,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 if self._mac_learning(dpid, src, in_port):
                     self._arp_forwarding(msg, src_ip, dst_ip, eth)
 
-        if ip_pkt:
+        if ip_pkt and self.check_time:
             self.logger.info("IPv4 Processing")
             '''
             for i in range(1, 7):
@@ -230,4 +241,12 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
                                 match=match, instructions=inst)
+        datapath.send_msg(mod)
+
+    def _del_flow(self, datapath):
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+        
+        mod = parser.OFPFlowMod(datapath=datapath, cookie=0, priority=1,
+                                command=ofproto.OFPFC_DELETE_STRICT)
         datapath.send_msg(mod)
