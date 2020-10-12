@@ -253,5 +253,5 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         
         mod = parser.OFPFlowMod(datapath=dp, cookie=0, priority=1,
                                 out_port=out, out_group=ofproto.OFPG_ANY,
-                                command=ofproto.OFPFC_DELETE_STRICT)
+                                command=ofproto.OFPFC_DELETE)
         dp.send_msg(mod)
