@@ -63,18 +63,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
-        if self.check_first_dfs:
-            sum_link1, sum_link2 = 0, 0
-            for dp in self.datapath_for_del:
-                sum_link1 += len(dp['ports'])
-            for i in self.adjacency:
-                sum_link2 += len(self.adjacency[i])
-            print("1 : {0}\n2 : {1}".format(sum_link1, sum_link2))
-            print('-' * 50)
-            if sum_link1 == sum_link2 and sum_link1 and sum_link2:
-                self.check_first_dfs = 0
-                self._get_paths()
-
         datapath = ev.msg.datapath
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
@@ -93,6 +81,18 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         dpid = datapath.id
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
+
+        if self.check_first_dfs:
+            sum_link1, sum_link2 = 0, 0
+            for dp in self.datapath_for_del:
+                sum_link1 += len(dp['ports'])
+            for i in self.adjacency:
+                sum_link2 += len(self.adjacency[i])
+            print("1 : {0}\n2 : {1}".format(sum_link1, sum_link2))
+            print('-' * 50)
+            if sum_link1 == sum_link2 and sum_link1 and sum_link2:
+                self.check_first_dfs = 0
+                self._get_paths()
 
         pkt = packet.Packet(msg.data)
         eth = pkt.get_protocols(ethernet.ethernet)[0]
