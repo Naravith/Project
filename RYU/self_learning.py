@@ -31,6 +31,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.adjacency = defaultdict(dict)
         self.time_start = time.time()
         self.check_time = True
+        self.datapath_for_del = []
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -69,6 +70,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
                                           ofproto.OFPCML_NO_BUFFER)]
         self._add_flow(datapath, 0, match, actions)
+        self.datapath_for_del.append(datapath)
         print("Switch : {0} Connected".format(datapath.id))
         if self.check_first_dfs:
             self.check_first_dfs = 0
@@ -94,11 +96,13 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self.hosts[src] = (dpid, in_port)
 
         print(time.time() - self.time_start)
-        if (time.time() - self.time_start) > 275.0:
+        if (time.time() - self.time_start) > 35.0:
             self.check_time = False
 
         if not self.check_time:
-            self._del_flow(datapath)
+            for dp in self.datapath_for_del:
+                for out in self.adjacency[dp.id]:
+                    self._del_flow(dp, self.adjacency[dp.id][out])
 
         if arp_pkt and self.check_time:
             self.logger.info("ARP processing")
@@ -150,8 +154,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 [2, 4, 6],
                 [3, 4, 5]
         ]
-        for x in range(1, 7):
-            for y in range(1, 7):
+        for x in sorted(self.switches):
+            for y in sorted(self.switches):
                 if x != y:
                     key_link, mark, path = str(x) + '->' + str(y), [0] * 6, []
                     self.all_path.setdefault(key_link, {})
@@ -228,7 +232,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def _send_packet_out(self, datapath, buffer_id, src_port, dst_port, data):
         out = self._build_packet_out(datapath, buffer_id,
                                      src_port, dst_port, data)
-        print("dpid : {0} | src : {1} | dst : {2}\nout : {3}".format(datapath.id, src_port, dst_port, out))
+        #print("dpid : {0} | src : {1} | dst : {2}\nout : {3}".format(datapath.id, src_port, dst_port, out))
         if out:
             datapath.send_msg(out)
 
@@ -243,10 +247,11 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                                 match=match, instructions=inst)
         datapath.send_msg(mod)
 
-    def _del_flow(self, datapath):
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
+    def _del_flow(self, dp, out):
+        ofproto = dp.ofproto
+        parser = dp.ofproto_parser
         
-        mod = parser.OFPFlowMod(datapath=datapath, cookie=0, priority=1,
+        mod = parser.OFPFlowMod(datapath=dp, cookie=0, priority=1,
+                                out_port=out, out_group=ofproto.OFPG_ANY,
                                 command=ofproto.OFPFC_DELETE_STRICT)
-        datapath.send_msg(mod)
+        dp.send_msg(mod)
