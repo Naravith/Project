@@ -11,10 +11,12 @@ from ryu.lib.packet import arp
 from ryu.lib.packet import ipv4
 from ryu.lib.packet import icmp
 from ryu.topology import event
+from ryu.topology.api import get_host
 from collections import defaultdict
 from ryu import utils
 
 import time
+import inspect
 
 class SelfLearningBYLuxuss(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
@@ -89,11 +91,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 sum_link1 += len(dp.ports) - 2 
             for i in self.adjacency:
                 sum_link2 += len(self.adjacency[i])
-            print("1 : {0}\n2 : {1}".format(sum_link1, sum_link2))
-            print('-' * 50)
             if sum_link1 == sum_link2 and sum_link1 and sum_link2:
                 self.check_first_dfs = 0
                 self._get_paths()
+                print(self.hosts)
 
         pkt = packet.Packet(msg.data)
         eth = pkt.get_protocols(ethernet.ethernet)[0]
