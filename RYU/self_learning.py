@@ -45,10 +45,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
             req = ofp_parser.OFPPortDescStatsRequest(switch)
             switch.send_msg(req)
-            if self.check_first_dfs and len(self.switches) != len(self.datapath_for_del):
-                self.check_first_dfs = 0
-                self._get_paths()
-                print(self.datapath_list)
         '''
         print("Switchs {0} Enter.\nDatapath_List :".format(self.switches))
         for i in self.datapath_list:
@@ -67,6 +63,18 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
+        if self.check_first_dfs:
+            sum_link1, sum_link2 = 0, 0
+            for dp in self.datapath_for_del:
+                sum_link1 += len(dp['ports'])
+            for i in self.adjacency:
+                sum_link2 += len(self.adjacency[i])
+            print("1 : {0}\n2 : {1}".format(sum_link1, sum_link2))
+            print('-' * 50)
+            if sum_link1 == sum_link2 and sum_link1 and sum_link2:
+                self.check_first_dfs = 0
+                self._get_paths()
+
         datapath = ev.msg.datapath
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
