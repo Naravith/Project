@@ -40,6 +40,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         #print("Object Switch {0} : {1}".format(switch.id, switch.__dict__))
         if switch.id not in self.switches:
             self.switches.append(switch.id)
+            self.switches = sorted(self.switches)
             self.datapath_list[switch.id] = switch
 
             req = ofp_parser.OFPPortDescStatsRequest(switch)
@@ -72,12 +73,12 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self._add_flow(datapath, 0, match, actions)
         self.datapath_for_del.append(datapath)
         print("Switch : {0} Connected".format(datapath.id))
-        if self.check_first_dfs:
-            self.check_first_dfs = 0
-            self._get_paths()
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
+        if self.check_first_dfs:
+            self.check_first_dfs = 0
+            self._get_paths()
         msg = ev.msg
         datapath = msg.datapath
         dpid = datapath.id
@@ -146,18 +147,13 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self._flood(msg)
 
     def _get_paths(self):
-        topo = [
-                [2, 3],
-                [1, 3, 5],
-                [1, 2, 6],
-                [5, 6],
-                [2, 4, 6],
-                [3, 4, 5]
-        ]
-        for x in sorted(self.switches):
-            for y in sorted(self.switches):
+        topo = []
+        for i in self.switches:
+            topo.append(sorted(self.adjacency[i]))
+        for x in self.switches:
+            for y in self.switches:
                 if x != y:
-                    key_link, mark, path = str(x) + '->' + str(y), [0] * 6, []
+                    key_link, mark, path = str(x) + '->' + str(y), [0] * len(self.switches), []
                     self.all_path.setdefault(key_link, {})
                     mark[x - 1] = 1
                     self._dfs(x, y, [x], topo, mark, path)
