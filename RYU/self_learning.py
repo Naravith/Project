@@ -45,6 +45,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
             req = ofp_parser.OFPPortDescStatsRequest(switch)
             switch.send_msg(req)
+            if self.check_first_dfs and len(self.switches) != len(self.datapath_for_del):
+                self.check_first_dfs = 0
+                self._get_paths()
+                print(self.datapath_list)
         '''
         print("Switchs {0} Enter.\nDatapath_List :".format(self.switches))
         for i in self.datapath_list:
@@ -76,9 +80,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
-        if self.check_first_dfs:
-            self.check_first_dfs = 0
-            self._get_paths()
         msg = ev.msg
         datapath = msg.datapath
         dpid = datapath.id
@@ -96,7 +97,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         if src not in self.hosts:
             self.hosts[src] = (dpid, in_port)
 
-        print(time.time() - self.time_start)
+        #print(time.time() - self.time_start)
         if (time.time() - self.time_start) > 35.0:
             self.check_time = False
 
