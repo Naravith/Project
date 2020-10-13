@@ -105,7 +105,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             sum_link1, sum_link2 = 0, 0
             for dp in self.datapath_for_del:
                 for i in dp.ports:
-                    if i != 4294967294 and i not in self.host_faucet[dp.id]:
+                    if i != 4294967294 or i not in self.host_faucet[dp.id]:
                         print(i, end=' ')
                         sum_link1 += 1
                 print('+' * 50)
@@ -188,10 +188,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     mark[x - 1] = 1
                     self._dfs(x, y, [x], topo, mark, path)
                     self.all_path[key_link] = sorted(path, key = len)
-        '''
+        
         for i in self.all_path:
             print(i, self.all_path[i])
-        '''
+        
 
     def _dfs(self, start, end, k, topo, mark, path):
         if k[-1] == end:
