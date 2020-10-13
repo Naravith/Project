@@ -99,7 +99,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         if self.check_first_dfs:
             sum_link1, sum_link2 = 0, 0
             for dp in self.datapath_for_del:
-                print("Port : {0} ||| {1}".format(dp.port, datapath.ofproto.OFPP_ANY))
+                print(dp.ports.keys())
+                for i in dp.ports:
+                    print(i == datapath.ofproto.OFPP_CONTROLLER, end='--')
+                print()
                 sum_link1 += len(dp.ports) - 2 
             for i in self.adjacency:
                 sum_link2 += len(self.adjacency[i])
