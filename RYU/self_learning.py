@@ -129,7 +129,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         #print(time.time() - self.time_start)
         if (time.time() - self.time_start) > 35.0:
-            self.check_time = False
+            #self.check_time = False
+            pass
 
         if not self.check_time:
             for dp in self.datapath_for_del:
