@@ -104,10 +104,12 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         if self.check_first_dfs:
             sum_link1, sum_link2 = 0, 0
             for dp in self.datapath_for_del:
+                print("Swtich :", dp.id)
                 for i in dp.ports:
-                    if i != 4294967294 or i not in self.host_faucet[dp.id]:
+                    if i != 4294967294 and (i not in self.host_faucet[dp.id]):
                         print(i, end=' ')
                         sum_link1 += 1
+                print()
             for i in self.adjacency:
                 sum_link2 += len(self.adjacency[i])
             if sum_link1 == sum_link2 and sum_link1 and sum_link2:
