@@ -35,6 +35,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.check_time = True
         self.datapath_for_del = []
         self.host_faucet = defaultdict(list)
+        self.topo = []
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -77,7 +78,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         print(ev.host.port.port_no)
         '''
         self.host_faucet[ev.host.port.dpid].append(ev.host.port.port_no)
-        print("host_faucet :", self.host_faucet)
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
@@ -100,7 +100,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
         
-        #print(datapath.__dict__)
         if self.check_first_dfs:
             sum_link1, sum_link2 = 0, 0
             for dp in self.datapath_for_del:
@@ -110,6 +109,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             for i in self.adjacency:
                 sum_link2 += len(self.adjacency[i])
             if sum_link1 == sum_link2 and sum_link1 and sum_link2:
+                for i in self.switches:
+                    self.topo.append(sorted(self.adjacency[i]))
                 self.check_first_dfs = 0
                 self._get_paths()
 
@@ -125,9 +126,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self.hosts[src] = (dpid, in_port)
 
         #print(time.time() - self.time_start)
-        if (time.time() - self.time_start) > 35.0:
+        if (time.time() - self.time_start) > 20.0:
             #self.check_time = False
-            pass
+            self._get_paths()
+            self.time_start = time.time()
 
         if not self.check_time:
             for dp in self.datapath_for_del:
@@ -135,7 +137,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     self._del_flow(dp, self.adjacency[dp.id][out])
 
         if arp_pkt and self.check_time:
-            self.logger.info("ARP processing")
+            #self.logger.info("ARP processing")
             src_ip = arp_pkt.src_ip
             dst_ip = arp_pkt.dst_ip
             self.arp_table[src_ip] = src
@@ -157,7 +159,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     self._arp_forwarding(msg, src_ip, dst_ip, eth)
 
         if ip_pkt and self.check_time:
-            self.logger.info("IPv4 Processing")
+            #self.logger.info("IPv4 Processing")
             '''
             for i in range(1, 7):
                 print("Switch {0} | {1} | {2}".format(i, i in self.mac_to_port, self.mac_to_port.get(i)))
@@ -176,20 +178,17 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self._flood(msg)
 
     def _get_paths(self):
-        topo = []
-        for i in self.switches:
-            topo.append(sorted(self.adjacency[i]))
         for x in self.switches:
             for y in self.switches:
                 if x != y:
                     key_link, mark, path = str(x) + '->' + str(y), [0] * len(self.switches), []
                     self.all_path.setdefault(key_link, {})
                     mark[x - 1] = 1
-                    self._dfs(x, y, [x], topo, mark, path)
+                    self._dfs(x, y, [x], self.topo, mark, path)
                     self.all_path[key_link] = sorted(path, key = len)
         
         for i in self.all_path:
-            print(i, self.all_path[i])
+            print(i, "Bestpath is", self.all_path[i][0])
         
 
     def _dfs(self, start, end, k, topo, mark, path):
@@ -237,7 +236,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                                      ofproto.OFPP_CONTROLLER,
                                      ofproto.OFPP_FLOOD, msg.data)
         datapath.send_msg(out)
-        self.logger.info("Flooding msg")
+        #self.logger.info("Flooding msg")
 
     def _build_packet_out(self, datapath, buffer_id, src_port, dst_port, data):
         actions = []
