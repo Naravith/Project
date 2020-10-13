@@ -197,14 +197,13 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             return
 
         print("Banned Switch ", banned)
-        for i in self.all_path:
-            tmp = self.all_path[i][0]
-            if banned != []:
-                for j in self.all_path[i]:
-                    if banned[0] not in j[1:-1]:
-                        tmp = j
-                        break
-            print(i, "Bestpath is", tmp)
+        for path in self.all_path:
+            tmp = self.all_path[path][0]
+            for alternate_path in self.all_path[path]:
+                if banned[0] not in alternate_path[1:-1]:
+                    tmp = alternate_path
+                    break
+            print(path, "Bestpath is", tmp)
         print('+' * 50)
         
 
