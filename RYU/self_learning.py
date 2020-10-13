@@ -105,6 +105,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             sum_link1, sum_link2 = 0, 0
             for dp in self.datapath_for_del:
                 for i in dp.ports:
+                    print(i, self.host_faucet[dp.id], i != 4294967294, i not in self.host_faucet[dp.id])
                     if i != 4294967294 or i not in self.host_faucet[dp.id]:
                         print(i, end=' ')
                         sum_link1 += 1
