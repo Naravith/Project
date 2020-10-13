@@ -63,6 +63,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         #print("s1 : {0}\ns2 : {1}".format(s1, s2))
         #print("adj :", self.adjacency)
 
+    @set_ev_cls(event.EventHostAdd, MAIN_DISPATCHER)
+    def host_add_handler(self, ev):
+        print(ev)
+
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
         datapath = ev.msg.datapath
