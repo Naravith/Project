@@ -67,9 +67,12 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def host_add_handler(self, ev):
         print(type(ev))
         print(ev)
-        print(ev.ipv4)
-        print(ev.mac)
-        print(ev.port)
+        print(ev.host)
+        print(ev.host.ipv4)
+        print(ev.host.mac)
+        print(ev.host.port)
+        print(ev.host.port.dpid)
+        print(ev.host.port.port_no)
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
