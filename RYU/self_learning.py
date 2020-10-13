@@ -201,7 +201,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             tmp = self.all_path[i][0]
             if banned != []:
                 for j in self.all_path[i]:
-                    if banned[0] not in j:
+                    if banned[0] not in j[1:-1]:
                         tmp = j
                         break
             print(i, "Bestpath is", tmp)
