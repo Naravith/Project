@@ -128,6 +128,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         #print(time.time() - self.time_start)
         if (time.time() - self.time_start) > 20.0:
             #self.check_time = False
+            print("Re-Routing")
             self._get_paths()
             self.time_start = time.time()
 
@@ -189,6 +190,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         
         for i in self.all_path:
             print(i, "Bestpath is", self.all_path[i][0])
+        print('+' * 50)
         
 
     def _dfs(self, start, end, k, topo, mark, path):
