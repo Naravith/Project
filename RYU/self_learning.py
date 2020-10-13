@@ -77,7 +77,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         print(ev.host.port.port_no)
         '''
         self.host_faucet[ev.host.port.dpid].append(ev.host.port.port_no)
-        print(self.host_faucet)
+        print("host_faucet :", self.host_faucet)
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
@@ -105,11 +105,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             sum_link1, sum_link2 = 0, 0
             for dp in self.datapath_for_del:
                 for i in dp.ports:
-                    print(i, self.host_faucet[dp.id], i != 4294967294, i not in self.host_faucet[dp.id])
                     if i != 4294967294 or i not in self.host_faucet[dp.id]:
                         print(i, end=' ')
                         sum_link1 += 1
-                print('+' * 50)
             for i in self.adjacency:
                 sum_link2 += len(self.adjacency[i])
             if sum_link1 == sum_link2 and sum_link1 and sum_link2:
