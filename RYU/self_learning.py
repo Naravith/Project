@@ -127,7 +127,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self.hosts[src] = (dpid, in_port)
 
         #print(time.time() - self.time_start)
-        if (time.time() - self.time_start) > 20.0:
+        if (time.time() - self.time_start) > 10.0:
             #self.check_time = False
             print("Re-Routing")
             self._get_paths([random.randint(min(self.switches), max(self.switches))])
@@ -190,9 +190,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     self.all_path[key_link] = sorted(path, key = len)
         
         for i in self.all_path:
+            tmp = self.all_path[i][0]
             if banned != []:
                 print("Banned Switch ", banned[0])
-                tmp = self.all_path[i][0]
                 for j in self.all_path[i]:
                     if banned[0] not in j:
                         tmp = j
