@@ -193,7 +193,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             if banned != []:
                 print("Path :", end=' ')
                 for j in self.all_path[i]:
-                    print("j", end='+')
+                    print(j, end='+')
                 print()
             print(i, "Bestpath is", self.all_path[i][0])
         print('+' * 50)
