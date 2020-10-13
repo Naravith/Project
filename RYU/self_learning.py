@@ -56,9 +56,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     @set_ev_cls(event.EventLinkAdd, MAIN_DISPATCHER)
     def link_add_handler(self, ev):
-        print(type(ev))
-        print(ev)
-        print(ev.link)
         s1 = ev.link.src
         s2 = ev.link.dst
         self.adjacency[s1.dpid][s2.dpid] = s1.port_no
@@ -70,7 +67,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def host_add_handler(self, ev):
         print(type(ev))
         print(ev)
-        print(type(ev.host), "|||", ev.host)
+        print(ev.ipv4)
+        print(ev.mac)
+        print(ev.port)
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
