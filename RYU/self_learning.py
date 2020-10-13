@@ -70,6 +70,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def host_add_handler(self, ev):
         print(type(ev))
         print(ev)
+        print(ev.host)
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
