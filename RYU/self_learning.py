@@ -188,11 +188,18 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     mark[x - 1] = 1
                     self._dfs(x, y, [x], self.topo, mark, path)
                     self.all_path[key_link] = sorted(path, key = len)
-        
+
+        if banned == []:
+            print("All Path :")
+            for i in self.all_path:
+                print(i, self.all_path[i])
+            print('+' * 50)
+            return
+
+        print("Banned Switch ", banned)
         for i in self.all_path:
             tmp = self.all_path[i][0]
             if banned != []:
-                print("Banned Switch ", banned[0])
                 for j in self.all_path[i]:
                     if banned[0] not in j:
                         tmp = j
