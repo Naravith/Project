@@ -100,7 +100,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             if sum_link1 == sum_link2 and sum_link1 and sum_link2:
                 self.check_first_dfs = 0
                 self._get_paths()
-                print(self.hosts)
 
         pkt = packet.Packet(msg.data)
         eth = pkt.get_protocols(ethernet.ethernet)[0]
@@ -175,9 +174,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     mark[x - 1] = 1
                     self._dfs(x, y, [x], topo, mark, path)
                     self.all_path[key_link] = sorted(path, key = len)
-        
+        '''
         for i in self.all_path:
             print(i, self.all_path[i])
+        '''
 
     def _dfs(self, start, end, k, topo, mark, path):
         if k[-1] == end:
