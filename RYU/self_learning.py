@@ -17,6 +17,7 @@ from ryu import utils
 
 import time
 import inspect
+import random
 
 class SelfLearningBYLuxuss(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
@@ -129,7 +130,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         if (time.time() - self.time_start) > 20.0:
             #self.check_time = False
             print("Re-Routing")
-            self._get_paths()
+            self._get_paths([random.randint(min(self.switches), max(self.switches))])
             self.time_start = time.time()
 
         if not self.check_time:
@@ -178,7 +179,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if self._mac_learning(dpid, src, in_port):
                         self._flood(msg)
 
-    def _get_paths(self):
+    def _get_paths(self, banned=[]):
         for x in self.switches:
             for y in self.switches:
                 if x != y:
@@ -189,6 +190,11 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     self.all_path[key_link] = sorted(path, key = len)
         
         for i in self.all_path:
+            if banned != []:
+                print("Path :", end=' ')
+                for j in self.all_path[i]:
+                    print("j", end='+')
+                print()
             print(i, "Bestpath is", self.all_path[i][0])
         print('+' * 50)
         
