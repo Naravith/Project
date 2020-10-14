@@ -208,6 +208,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         
 
     def _dfs(self, start, end, k, topo, mark, path):
+        print("Topo :", topo)
         if k[-1] == end:
             if len(k) == len(set(k)):
                 path.append(k[:])
