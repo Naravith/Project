@@ -63,9 +63,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         s2 = ev.link.dst
         self.adjacency[s1.dpid][s2.dpid] = s1.port_no
         self.adjacency[s2.dpid][s1.dpid] = s2.port_no
-        print(ev)
         #print("s1 : {0}\ns2 : {1}".format(s1, s2))
-        #print("adj :", self.adjacency)
+        print("adj :", self.adjacency)
 
     @set_ev_cls(event.EventHostAdd, MAIN_DISPATCHER)
     def host_add_handler(self, ev):
@@ -101,7 +100,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         dpid = datapath.id
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
-        
+       
         if self.check_first_dfs:
             sum_link1, sum_link2 = 0, 0
             for dp in self.datapath_for_del:
