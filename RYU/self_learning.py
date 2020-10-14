@@ -37,6 +37,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.datapath_for_del = []
         self.host_faucet = defaultdict(list)
         self.topo = []
+        self.link_for_DL = []
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -64,7 +65,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.adjacency[s1.dpid][s2.dpid] = s1.port_no
         self.adjacency[s2.dpid][s1.dpid] = s2.port_no
         #print("s1 : {0}\ns2 : {1}".format(s1, s2))
-        print("adj :", self.adjacency)
+        #print("adj :", self.adjacency)
 
     @set_ev_cls(event.EventHostAdd, MAIN_DISPATCHER)
     def host_add_handler(self, ev):
@@ -127,10 +128,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self.hosts[src] = (dpid, in_port)
 
         #print(time.time() - self.time_start)
-        if (time.time() - self.time_start) > 10.0:
+        if (time.time() - self.time_start) > 10.0 and not self.check_first_dfs:
             #self.check_time = False
             print("Re-Routing")
-            self._re_routing([random.randint(min(self.switches), max(self.switches))])
+            self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
             self.time_start = time.time()
 
         if not self.check_time:
@@ -180,14 +181,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self._flood(msg)
 
     def _re_routing(self, banned=[]):
-        if banned == []:
-            print("All Path :")
-            for i in self.all_path:
-                print(i, self.all_path[i])
-            print('+' * 50)
-            return
-
-        print("Banned Switch ", banned)
+        print("Banned Link Between Switch : {0} and Switch : {1}".format(banned[0], banned[1]))
+        print(self.all_path)
+        '''
         for path in self.all_path:
             tmp = self.all_path[path][0]
             for alternate_path in self.all_path[path]:
@@ -196,11 +192,14 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     break
             print(path, "Bestpath is", tmp)
         print('+' * 50)
+        '''
 
     def _get_paths(self):
         for x in self.switches:
             for y in self.switches:
                 if x != y:
+                    if y in self.adjacency[x].keys() and [x, y] not in self.link_for_DL and [x, y][::-1] not in self.link_for_DL:
+                        self.link_for_DL.append([x, y])
                     key_link, mark, path = str(x) + '->' + str(y), [0] * len(self.switches), []
                     self.all_path.setdefault(key_link, {})
                     mark[x - 1] = 1
