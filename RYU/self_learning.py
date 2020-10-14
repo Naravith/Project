@@ -130,7 +130,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         if (time.time() - self.time_start) > 10.0:
             #self.check_time = False
             print("Re-Routing")
-            self._get_paths([random.randint(min(self.switches), max(self.switches))])
+            self._re_routing([random.randint(min(self.switches), max(self.switches))])
             self.time_start = time.time()
 
         if not self.check_time:
@@ -179,16 +179,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if self._mac_learning(dpid, src, in_port):
                         self._flood(msg)
 
-    def _get_paths(self, banned=[]):
-        for x in self.switches:
-            for y in self.switches:
-                if x != y:
-                    key_link, mark, path = str(x) + '->' + str(y), [0] * len(self.switches), []
-                    self.all_path.setdefault(key_link, {})
-                    mark[x - 1] = 1
-                    self._dfs(x, y, [x], self.topo, mark, path)
-                    self.all_path[key_link] = sorted(path, key = len)
-
+    def _re_routing(self, banned=[]):
         if banned == []:
             print("All Path :")
             for i in self.all_path:
@@ -205,10 +196,18 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     break
             print(path, "Bestpath is", tmp)
         print('+' * 50)
-        
+
+    def _get_paths(self):
+        for x in self.switches:
+            for y in self.switches:
+                if x != y:
+                    key_link, mark, path = str(x) + '->' + str(y), [0] * len(self.switches), []
+                    self.all_path.setdefault(key_link, {})
+                    mark[x - 1] = 1
+                    self._dfs(x, y, [x], self.topo, mark, path)
+                    self.all_path[key_link] = sorted(path, key = len)
 
     def _dfs(self, start, end, k, topo, mark, path):
-        print("Topo :", topo)
         if k[-1] == end:
             if len(k) == len(set(k)):
                 path.append(k[:])
