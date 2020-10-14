@@ -63,6 +63,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         s2 = ev.link.dst
         self.adjacency[s1.dpid][s2.dpid] = s1.port_no
         self.adjacency[s2.dpid][s1.dpid] = s2.port_no
+        print(ev)
         #print("s1 : {0}\ns2 : {1}".format(s1, s2))
         #print("adj :", self.adjacency)
 
