@@ -181,18 +181,20 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self._flood(msg)
 
     def _re_routing(self, banned=[]):
+        print("Re Routing Process :")
         print("Banned Link Between Switch : {0} and Switch : {1}".format(banned[0], banned[1]))
-        print(self.all_path)
-        '''
         for path in self.all_path:
             tmp = self.all_path[path][0]
             for alternate_path in self.all_path[path]:
-                if banned[0] not in alternate_path[1:-1]:
+                if banned[0] not in alternate_path or banned[1] not in alternate_path:
+                    tmp = alternate_path
+                    break
+                elif banned[0] in alternate_path and banned[1] in alternate_path and abs(alternate_path.index(banned[1]) - alternate_path.index(banned[0])) != 1:
                     tmp = alternate_path
                     break
             print(path, "Bestpath is", tmp)
         print('+' * 50)
-        '''
+        
 
     def _get_paths(self):
         for x in self.switches:
@@ -205,6 +207,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     mark[x - 1] = 1
                     self._dfs(x, y, [x], self.topo, mark, path)
                     self.all_path[key_link] = sorted(path, key = len)
+        
+        print("Topology All Path :")
+        for i in self.all_path:
+            print(i, ":", self.all_path[i])
 
     def _dfs(self, start, end, k, topo, mark, path):
         if k[-1] == end:
