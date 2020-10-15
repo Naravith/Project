@@ -68,7 +68,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
-        req = parser.OFPPortStatsRequest(datapath=datapath, flags=0, out_port=ofproto.OFPP_ANY)
+        req = parser.OFPPortStatsRequest(datapath=datapath, flags=0, port_no=ofproto.OFPP_ANY)
         datapath.send_msg(req)
 
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
