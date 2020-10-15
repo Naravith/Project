@@ -59,6 +59,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     def _TrafficMonitor(self):
         while True:
+            print(self.link_for_DL)
             for datapath in self.datapath_for_del:
                 print("Traffic Monitor Switch :", datapath.id)
                 self._PortStatReq(datapath)
