@@ -66,7 +66,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.adjacency[s1.dpid][s2.dpid] = s1.port_no
         self.adjacency[s2.dpid][s1.dpid] = s2.port_no
         #print("s1 : {0}\ns2 : {1}".format(s1, s2))
-        #print("adj :", self.adjacency)
+        print("adj :", self.adjacency)
 
     @set_ev_cls(event.EventHostAdd, MAIN_DISPATCHER)
     def host_add_handler(self, ev):
@@ -116,7 +116,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     self.topo.append(sorted(self.adjacency[i]))
                 self.check_first_dfs = 0
                 self._get_paths()
-                self._re_routing([7, 8])
 
         pkt = packet.Packet(msg.data)
         eth = pkt.get_protocols(ethernet.ethernet)[0]
@@ -212,7 +211,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             print(i, self.best_path[i])
         print('+' * 50)
         '''
-        print(self.best_path)
         
 
     def _get_paths(self):
