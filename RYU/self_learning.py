@@ -128,16 +128,25 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self.hosts[src] = (dpid, in_port)
 
         #print(time.time() - self.time_start)
-        if (time.time() - self.time_start) > 10.0 and not self.check_first_dfs:
+        if (time.time() - self.time_start) > 20.0 and not self.check_first_dfs:
             #self.check_time = False
-            print("Re-Routing")
-            self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
+            #print("Re-Routing")
+            #self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
             self.time_start = time.time()
+            print("Mac to Port :\n{0}".format(self.mac_to_port))
+            print('-' * 50)
+            print("Hosts :\n{0}".format(self.hosts))
+            print('-' * 50)
+            for dp in self.datapath_for_del:
+                for out in self.adjacency[dp.id]:
+                    self._del_flow(dp, self.adjacency[dp.id][out])
 
+        '''
         if not self.check_time:
             for dp in self.datapath_for_del:
                 for out in self.adjacency[dp.id]:
                     self._del_flow(dp, self.adjacency[dp.id][out])
+        '''
 
         if arp_pkt and self.check_time:
             #self.logger.info("ARP processing")
@@ -207,10 +216,11 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     mark[x - 1] = 1
                     self._dfs(x, y, [x], self.topo, mark, path)
                     self.all_path[key_link] = sorted(path, key = len)
-        
+        '''
         print("Topology All Path :")
         for i in self.all_path:
             print(i, ":", self.all_path[i])
+        '''
 
     def _dfs(self, start, end, k, topo, mark, path):
         if k[-1] == end:
