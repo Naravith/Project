@@ -76,11 +76,13 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
     def _port_stats_reply_handler(self, ev):
         msg = ev.msg
-        print('*' * 50)
-        print("Switch : {0}".format(msg.datapath.id))
-        print(msg.to_jsondict())
-        print('+' * 50)
-        print('+' * 50)
+        port_stat_reply = msg.to_jsondict()
+        port_stat = port_stat_reply['OFPPortStatsReply']['body'][0]['OFPPortStats']
+
+        print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
+        print("Tx : {0} packets | Rx:{1} packets".format(port_stat['tx_packets'], port_stat['rx_packets']))
+        print("BW Utilization : {0}".format(port_stat['tx_bytes'] + port_stat['rx_bytes']))
+        print("+" * 50)
 
     @set_ev_cls(event.EventLinkAdd, MAIN_DISPATCHER)
     def link_add_handler(self, ev):
