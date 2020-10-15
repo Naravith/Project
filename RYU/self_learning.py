@@ -66,7 +66,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.adjacency[s1.dpid][s2.dpid] = s1.port_no
         self.adjacency[s2.dpid][s1.dpid] = s2.port_no
         #print("s1 : {0}\ns2 : {1}".format(s1, s2))
-        print("adj :", self.adjacency)
+        #print("adj :", self.adjacency)
 
     @set_ev_cls(event.EventHostAdd, MAIN_DISPATCHER)
     def host_add_handler(self, ev):
@@ -184,6 +184,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self._flood(msg)
 
     def _re_routing(self, banned=[]):
+        print('+' * 50)
         print("Re-Routing Process :")
         print("Banned Link Between Switch : {0} and Switch : {1}".format(banned[0], banned[1]))
         self.best_path ={}
@@ -199,6 +200,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self.best_path.setdefault(path, {})
             self.best_path[path] = tmp
         
+        for i in self.best_path:
+            print(i, self.best_path[i])
+
         for dp in self.datapath_for_del:
             for out in self.adjacency[dp.id]:
                 self._del_flow(dp, self.adjacency[dp.id][out])
@@ -217,6 +221,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self.mac_to_port[tmp[i]][dst_mac] = self.adjacency[tmp[i]][tmp[i + 1]]
         
         print("Re-Routing Seccess ! ! !")
+        print('+' * 50)
         
 
     def _get_paths(self):
