@@ -87,8 +87,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self.port_stat_links[tmp].append([port_stat['tx_packets'] - past_port_stat[0], port_stat['rx_packets'] - past_port_stat[1], port_stat['tx_bytes'] + port_stat['rx_bytes']  - past_port_stat[2]])
 
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
-        print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0], self.port_stat_links[tmp][1]))
-        print("BW Utilization : {0}".format(self.port_stat_links[tmp][2]))
+        print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
+        print("BW Utilization : {0}".format(self.port_stat_links[tmp][0][2]))
         print("+" * 50)
 
     @set_ev_cls(event.EventLinkAdd, MAIN_DISPATCHER)
