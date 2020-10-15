@@ -116,6 +116,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     self.topo.append(sorted(self.adjacency[i]))
                 self.check_first_dfs = 0
                 self._get_paths()
+                self._re_routing([7, 8])
 
         pkt = packet.Packet(msg.data)
         eth = pkt.get_protocols(ethernet.ethernet)[0]
@@ -130,18 +131,11 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         '''
 
         #print(time.time() - self.time_start)
-        if (time.time() - self.time_start) > 20.0 and not self.check_first_dfs:
+        if (time.time() - self.time_start) > 30.0 and not self.check_first_dfs:
             #self.check_time = False
-            #print("Re-Routing")
-            #self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
+            print("Re-Routing")
+            self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
             self.time_start = time.time()
-            print("Mac to Port :\n{0}".format(self.mac_to_port))
-            print('-' * 50)
-            print("Hosts :\n{0}".format(self.hosts))
-            print('-' * 50)
-            for dp in self.datapath_for_del:
-                for out in self.adjacency[dp.id]:
-                    self._del_flow(dp, self.adjacency[dp.id][out])
 
         '''
         if not self.check_time:
@@ -206,11 +200,23 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     break
             self.best_path.setdefault(path, {})
             self.best_path[path] = tmp
-        '''
-        for i in self.best_path:
-            print(i, self.best_path[i])
-        print('+' * 50)
-        '''
+        
+        for dp in self.datapath_for_del:
+                for out in self.adjacency[dp.id]:
+                    self._del_flow(dp, self.adjacency[dp.id][out])
+
+        self.mac_to_port  = {}
+        for i in self.hosts:
+            self.mac_to_port.setdefault(self.hosts[i][0], {})
+            self.mac_to_port[self.hosts[i][0]][i] = self.hosts[i][1]
+        
+        for src_mac in self.hosts:
+            for dst_mac in self.hosts:
+                if src_mac != dst_mac:
+                    src_dpid, dst_dpid = self.hosts[src_mac][0], self.hosts[dst_mac][0]
+                    tmp = self.best_path[str(src_dpid) + '->' + str(dst_dpid)]
+                    for i in range(len(tmp) - 1):
+                        self.mac_to_port[tmp[i]][dst_mac] = self.adjacency[tmp[i]][tmp[i + 1]]
         
 
     def _get_paths(self):
