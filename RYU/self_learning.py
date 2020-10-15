@@ -69,16 +69,17 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     @set_ev_cls(event.EventHostAdd, MAIN_DISPATCHER)
     def host_add_handler(self, ev):
+        HOST = ev.host
         #print(type(ev))
         #print(ev)
-        print(ev.host)
+        #print(ev.host)
         #print(ev.host.ipv4)
         #print(ev.host.mac)
         #print(ev.host.port)
         #print(ev.host.port.dpid)
         #print(ev.host.port.port_no)
-        
-        self.host_faucet[ev.host.port.dpid].append(ev.host.port.port_no)
+        self.hosts[HOST.mac] = (HOST.port.dpid, HOST.port.port_no)
+        self.host_faucet[HOST.port.dpid].append(HOST.port.port_no)
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
@@ -122,9 +123,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         dst = eth.dst
         src = eth.src
-
+        '''
         if src not in self.hosts:
             self.hosts[src] = (dpid, in_port)
+        '''
 
         #print(time.time() - self.time_start)
         if (time.time() - self.time_start) > 20.0 and not self.check_first_dfs:
@@ -132,6 +134,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             #print("Re-Routing")
             #self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
             self.time_start = time.time()
+            print("Mac to Port :\n{0}".format(self.mac_to_port))
+            print('-' * 50)
+            print("Hosts :\n{0}".format(self.hosts))
+            print('-' * 50)
             for dp in self.datapath_for_del:
                 for out in self.adjacency[dp.id]:
                     self._del_flow(dp, self.adjacency[dp.id][out])
