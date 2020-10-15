@@ -116,7 +116,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     self.topo.append(sorted(self.adjacency[i]))
                 self.check_first_dfs = 0
                 self._get_paths()
-                self._re_routing([7, 8])
 
         pkt = packet.Packet(msg.data)
         eth = pkt.get_protocols(ethernet.ethernet)[0]
@@ -131,9 +130,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         '''
 
         #print(time.time() - self.time_start)
-        if (time.time() - self.time_start) > 30.0 and not self.check_first_dfs:
+        if (time.time() - self.time_start) > 40.0 and not self.check_first_dfs:
             #self.check_time = False
-            print("Re-Routing")
             self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
             self.time_start = time.time()
 
@@ -186,7 +184,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self._flood(msg)
 
     def _re_routing(self, banned=[]):
-        print("Re Routing Process :")
+        print("Re-Routing Process :")
         print("Banned Link Between Switch : {0} and Switch : {1}".format(banned[0], banned[1]))
         self.best_path ={}
         for path in self.all_path:
@@ -202,8 +200,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self.best_path[path] = tmp
         
         for dp in self.datapath_for_del:
-                for out in self.adjacency[dp.id]:
-                    self._del_flow(dp, self.adjacency[dp.id][out])
+            for out in self.adjacency[dp.id]:
+                self._del_flow(dp, self.adjacency[dp.id][out])
 
         self.mac_to_port  = {}
         for i in self.hosts:
@@ -217,6 +215,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     tmp = self.best_path[str(src_dpid) + '->' + str(dst_dpid)]
                     for i in range(len(tmp) - 1):
                         self.mac_to_port[tmp[i]][dst_mac] = self.adjacency[tmp[i]][tmp[i + 1]]
+        
+        print("Re-Routing Seccess ! ! !")
         
 
     def _get_paths(self):
