@@ -63,9 +63,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             for datapath in self.datapath_for_del:
                 for link in self.link_for_DL:
                     if datapath.id == link[0]:
-                        print("Switch : {0}  ||  Port : {1}".format(datapath.id, self.adjacency[link[0]][link[1]]))
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
-                        print('+' * 50)
             hub.sleep(1)
 
     def _PortStatReq(self, datapath, port_no):
@@ -77,9 +75,12 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
     def _port_stats_reply_handler(self, ev):
-        body = ev.msg.body
-
-        print(ev.msg.to_jsondict())
+        msg = ev.msg
+        print('*' * 50)
+        print("Switch : {0}".format(msg.datapath.id))
+        print(msg.to_jsondict())
+        print('+' * 50)
+        print('+' * 50)
 
     @set_ev_cls(event.EventLinkAdd, MAIN_DISPATCHER)
     def link_add_handler(self, ev):
