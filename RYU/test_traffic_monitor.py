@@ -31,6 +31,9 @@ class SimpleMonitor13(simple_switch_13.SimpleSwitch13):
 
     def _monitor(self):
         while True:
+            print("Monitor :")
+            print(self.datapaths)
+            print('-----------------------------------------')
             for dp in self.datapaths.values():
                 self._request_stats(dp)
             hub.sleep(1)

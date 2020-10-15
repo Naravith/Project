@@ -3,17 +3,13 @@ from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER, DEAD_DISPATCHER
 from ryu.controller.handler import MAIN_DISPATCHER, HANDSHAKE_DISPATCHER
 from ryu.controller.handler import set_ev_cls
-from ryu.ofproto import ofproto_v1_3
-from ryu.ofproto import ether
-from ryu.lib.packet import packet
-from ryu.lib.packet import ethernet
-from ryu.lib.packet import arp
-from ryu.lib.packet import ipv4
-from ryu.lib.packet import icmp
+from ryu.ofproto import ofproto_v1_3, ether
+from ryu.lib import hub
+from ryu.lib.packet import packet, ethernet, arp, ipv4
 from ryu.topology import event
 from ryu.topology.api import get_host
-from collections import defaultdict
 from ryu import utils
+from collections import defaultdict
 
 import time
 import inspect
@@ -39,6 +35,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.topo = []
         self.link_for_DL = []
         self.best_path = {}
+        self.monitor_thread = hub.spawn(self._monitor)
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
