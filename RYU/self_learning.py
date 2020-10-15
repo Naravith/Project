@@ -60,7 +60,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     def _TrafficMonitor(self):
         while True:
-            print(self.link_for_DL)
             for datapath in self.datapath_for_del:
                 for link in self.link_for_DL:
                     if datapath.id == link[0]:
@@ -82,10 +81,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         tmp = "S{0}-P{1}".format(msg.datapath.id, port_stat['port_no'])
         if tmp not in self.port_stat_links:
-            self.port_stat_links[tmp].append([port_stat['tx_packets'], port_stat['rx_packets']], port_stat['tx_bytes'] + port_stat['rx_bytes'])
+            self.port_stat_links[tmp].append([port_stat['tx_packets'], port_stat['rx_packets'], port_stat['tx_bytes'] + port_stat['rx_bytes']])
         else:
             past_port_stat = self.port_stat_links[tmp].pop(0)
-            self.port_stat_links[tmp].append([port_stat['tx_packets'] - past_port_stat[0], port_stat['rx_packets']] - past_port_stat[1], port_stat['tx_bytes'] + port_stat['rx_bytes']  - past_port_stat[2])
+            self.port_stat_links[tmp].append([port_stat['tx_packets'] - past_port_stat[0], port_stat['rx_packets'] - past_port_stat[1], port_stat['tx_bytes'] + port_stat['rx_bytes']  - past_port_stat[2]])
 
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0], self.port_stat_links[tmp][1]))
