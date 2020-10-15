@@ -38,6 +38,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.host_faucet = defaultdict(list)
         self.topo = []
         self.link_for_DL = []
+        self.best_path = {}
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -193,6 +194,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def _re_routing(self, banned=[]):
         print("Re Routing Process :")
         print("Banned Link Between Switch : {0} and Switch : {1}".format(banned[0], banned[1]))
+        self.best_path ={}
         for path in self.all_path:
             tmp = self.all_path[path][0]
             for alternate_path in self.all_path[path]:
@@ -202,7 +204,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 elif banned[0] in alternate_path and banned[1] in alternate_path and abs(alternate_path.index(banned[1]) - alternate_path.index(banned[0])) != 1:
                     tmp = alternate_path
                     break
-            print(path, "Bestpath is", tmp)
+            self.best_path.setdefault(path, {})
+            self.best_path[path] = tmp
+        for i in self.best_path:
+            print(i, self.best_path[i])
         print('+' * 50)
         
 
