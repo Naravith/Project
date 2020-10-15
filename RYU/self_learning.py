@@ -10,6 +10,7 @@ from ryu.topology import event
 from ryu.topology.api import get_host
 from ryu import utils
 from collections import defaultdict
+from operator import attrgetter
 
 import time
 import inspect
@@ -35,7 +36,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.topo = []
         self.link_for_DL = []
         self.best_path = {}
-        self.monitor_thread = hub.spawn(self._monitor)
+        self.monitor_thread = hub.spawn(self._TrafficMonitor)
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -55,6 +56,37 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             print("Switch {0} -> {1}".format(i, self.datapath_list[i].__dict__))
         print("-" * 40)
         '''
+
+    def _TrafficMonitor(self):
+        while True:
+            for datapath in self.datapath_for_del:
+                print("Traffic Monitor Switch :", datapath.id)
+                self._PortStatReq(datapath)
+            hub.sleep(1)
+
+    def _PortStatReq(self, datapath):
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+
+        req = parser.OFPPortStatsRequest(datapath=datapath, flags=0, table_id=ofproto.OFPTT_ALL, out_port=ofproto.OFPP_ANY)
+        datapath.send_msg(req)
+
+    @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
+    def _port_stats_reply_handler(self, ev):
+        body = ev.msg.body
+
+        self.logger.info('datapath         port     '
+                         'rx-pkts  rx-bytes rx-error '
+                         'tx-pkts  tx-bytes tx-error')
+        self.logger.info('---------------- -------- '
+                         '-------- -------- -------- '
+                         '-------- -------- --------')
+                         
+        for stat in sorted(body, key=attrgetter('port_no')):
+            self.logger.info('%016x %8x %8d %8d %8d %8d %8d %8d',
+                             ev.msg.datapath.id, stat.port_no,
+                             stat.rx_packets, stat.rx_bytes, stat.rx_errors,
+                             stat.tx_packets, stat.tx_bytes, stat.tx_errors)
 
     @set_ev_cls(event.EventLinkAdd, MAIN_DISPATCHER)
     def link_add_handler(self, ev):
