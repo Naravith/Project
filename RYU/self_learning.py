@@ -116,6 +116,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     self.topo.append(sorted(self.adjacency[i]))
                 self.check_first_dfs = 0
                 self._get_paths()
+                self._re_routing([7, 8])
 
         pkt = packet.Packet(msg.data)
         eth = pkt.get_protocols(ethernet.ethernet)[0]
