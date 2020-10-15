@@ -61,33 +61,25 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         while True:
             print(self.link_for_DL)
             for datapath in self.datapath_for_del:
-                print("Traffic Monitor Switch :", datapath.id)
-                self._PortStatReq(datapath)
+                for link in self.link_for_DL:
+                    if datapath.id == link[0]:
+                        print("Switch : {0}  ||  Port : {1}".format(datapath.id, self.adjacency[link[0]][link[1]]))
+                        self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
+                        print('+' * 50)
             hub.sleep(1)
 
-    def _PortStatReq(self, datapath):
+    def _PortStatReq(self, datapath, port_no):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
-        req = parser.OFPPortStatsRequest(datapath=datapath, flags=0, port_no=ofproto.OFPP_ANY)
+        req = parser.OFPPortStatsRequest(datapath=datapath, flags=0, port_no=port_no)
         datapath.send_msg(req)
 
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
     def _port_stats_reply_handler(self, ev):
         body = ev.msg.body
 
-        self.logger.info('datapath         port     '
-                         'rx-pkts  rx-bytes rx-error '
-                         'tx-pkts  tx-bytes tx-error')
-        self.logger.info('---------------- -------- '
-                         '-------- -------- -------- '
-                         '-------- -------- --------')
-
-        for stat in sorted(body, key=attrgetter('port_no')):
-            self.logger.info('%016x %8x %8d %8d %8d %8d %8d %8d',
-                             ev.msg.datapath.id, stat.port_no,
-                             stat.rx_packets, stat.rx_bytes, stat.rx_errors,
-                             stat.tx_packets, stat.tx_bytes, stat.tx_errors)
+        print(ev.msg.to_jsondict())
 
     @set_ev_cls(event.EventLinkAdd, MAIN_DISPATCHER)
     def link_add_handler(self, ev):
