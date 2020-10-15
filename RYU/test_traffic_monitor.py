@@ -7,6 +7,7 @@ from ryu.controller.handler import set_ev_cls
 from ryu.lib import hub
 
 import json
+import inspect
 
 
 class SimpleMonitor13(simple_switch_13.SimpleSwitch13):
@@ -32,7 +33,8 @@ class SimpleMonitor13(simple_switch_13.SimpleSwitch13):
     def _monitor(self):
         while True:
             print("Monitor :")
-            print(self.datapaths)
+            for i in self.datapaths:
+                print(i, self.datapaths[i])
             print('-----------------------------------------')
             for dp in self.datapaths.values():
                 self._request_stats(dp)
@@ -100,5 +102,5 @@ class SimpleMonitor13(simple_switch_13.SimpleSwitch13):
                              ev.msg.datapath.id, stat.port_no,
                              stat.rx_packets, stat.rx_bytes, stat.rx_errors,
                              stat.tx_packets, stat.tx_bytes, stat.tx_errors)
-        print("&" * 50)
-        '''
+        print("&" * 50)'''
+        
