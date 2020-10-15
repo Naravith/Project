@@ -207,9 +207,12 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     break
             self.best_path.setdefault(path, {})
             self.best_path[path] = tmp
+        '''
         for i in self.best_path:
             print(i, self.best_path[i])
         print('+' * 50)
+        '''
+        print(self.best_path)
         
 
     def _get_paths(self):
