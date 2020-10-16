@@ -13,6 +13,8 @@ from collections import defaultdict
 from operator import attrgetter
 
 import time
+import csv
+import os
 import inspect
 import random
 
@@ -38,6 +40,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.best_path = {}
         self.monitor_thread = hub.spawn(self._TrafficMonitor)
         self.port_stat_links = defaultdict(list)
+        self.csv_filename = []
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -81,10 +84,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         tmp = "S{0}-P{1}".format(msg.datapath.id, port_stat['port_no'])
         if tmp not in self.port_stat_links:
-            self.port_stat_links[tmp].append([port_stat['tx_packets'], port_stat['rx_packets'], port_stat['tx_bytes'] + port_stat['rx_bytes']])
+            self.port_stat_links[tmp].append([port_stat['tx_packets'], port_stat['rx_packets'], (port_stat['tx_bytes'] + port_stat['rx_bytes']) / 13107200])
         else:
             past_port_stat = self.port_stat_links[tmp].pop(0)
-            self.port_stat_links[tmp].append([port_stat['tx_packets'] - past_port_stat[0], port_stat['rx_packets'] - past_port_stat[1], port_stat['tx_bytes'] + port_stat['rx_bytes']  - past_port_stat[2]])
+            self.port_stat_links[tmp].append([port_stat['tx_packets'] - past_port_stat[0], port_stat['rx_packets'] - past_port_stat[1], (port_stat['tx_bytes'] + port_stat['rx_bytes']  - past_port_stat[2]) / 13107200])
 
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
@@ -257,16 +260,20 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         
 
     def _get_paths(self):
+        cnt = 1
         for x in self.switches:
             for y in self.switches:
                 if x != y:
                     if y in self.adjacency[x].keys() and [x, y] not in self.link_for_DL and [x, y][::-1] not in self.link_for_DL:
                         self.link_for_DL.append([x, y])
+                        self.csv_filename.append("link{0}.csv".format(cnt))
+                        cnt += 1
                     key_link, mark, path = str(x) + '->' + str(y), [0] * len(self.switches), []
                     self.all_path.setdefault(key_link, {})
                     mark[x - 1] = 1
                     self._dfs(x, y, [x], self.topo, mark, path)
                     self.all_path[key_link] = sorted(path, key = len)
+        print(self.csv_filename)
         '''
         print("Topology All Path :")
         for i in self.all_path:
