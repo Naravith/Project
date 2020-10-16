@@ -89,10 +89,23 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             past_port_stat = self.port_stat_links[tmp].pop(0)
             self.port_stat_links[tmp].append([port_stat['tx_packets'] - past_port_stat[0], port_stat['rx_packets'] - past_port_stat[1], (port_stat['tx_bytes'] + port_stat['rx_bytes']  - past_port_stat[2]) / 13107200])
 
+        for dst_switch, values in self.adjacency[msg.datapath.id].items():
+            if values == port_stat['port_no']:
+                filename = self.csv_filename["[{0}, {1}]".format(msg.datapath.id, dst_switch)]
+                if not os.path.isfile(filename):
+                    self._append_list_as_row(filename, ['Timestamp', 'Tx_Packet', 'Rx_Packet', 'BW_Utilization'])
+                row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1], self.port_stat_links[tmp][0][2]]
+                self._append_list_as_row(filename, row_contents)
+            
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
         print("BW Utilization : {0}".format(self.port_stat_links[tmp][0][2]))
         print("+" * 50)
+
+    def _append_list_as_row(self, file_name, list_of_elem):
+        with open(file_name, 'a+', newline='') as write_obj:
+            csv_writer = csv.writer(write_obj)
+            csv_writer.writerow(list_of_elem)
 
     @set_ev_cls(event.EventLinkAdd, MAIN_DISPATCHER)
     def link_add_handler(self, ev):
@@ -267,14 +280,13 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if y in self.adjacency[x].keys() and [x, y] not in self.link_for_DL and [x, y][::-1] not in self.link_for_DL:
                         self.link_for_DL.append([x, y])
                         self.csv_filename.setdefault(str([x, y]), {})
-                        self.csv_filename[str([x, y])] = "link{0}.csv".format(cnt)
+                        self.csv_filename[str([x, y])] = "./link{0}.csv".format(cnt)
                         cnt += 1
                     key_link, mark, path = str(x) + '->' + str(y), [0] * len(self.switches), []
                     self.all_path.setdefault(key_link, {})
                     mark[x - 1] = 1
                     self._dfs(x, y, [x], self.topo, mark, path)
                     self.all_path[key_link] = sorted(path, key = len)
-        print(self.csv_filename)
         '''
         print("Topology All Path :")
         for i in self.all_path:
