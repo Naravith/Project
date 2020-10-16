@@ -40,7 +40,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.best_path = {}
         self.monitor_thread = hub.spawn(self._TrafficMonitor)
         self.port_stat_links = defaultdict(list)
-        self.csv_filename = []
+        self.csv_filename = {}
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -266,7 +266,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 if x != y:
                     if y in self.adjacency[x].keys() and [x, y] not in self.link_for_DL and [x, y][::-1] not in self.link_for_DL:
                         self.link_for_DL.append([x, y])
-                        self.csv_filename.append("link{0}.csv".format(cnt))
+                        self.csv_filename.setdefault(str([x, y]), {})
+                        self.csv_filename[str([x, y])] = "link{0}.csv".format(cnt)
                         cnt += 1
                     key_link, mark, path = str(x) + '->' + str(y), [0] * len(self.switches), []
                     self.all_path.setdefault(key_link, {})
