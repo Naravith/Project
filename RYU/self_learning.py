@@ -99,7 +99,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
-        print("BW Utilization : {0}".format(self.port_stat_links[tmp][0][2]))
+        print("BW Utilization : {0} %".format((self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 13107200 * 100))
         print("+" * 50)
 
     def _append_list_as_row(self, file_name, list_of_elem):
