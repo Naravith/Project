@@ -84,17 +84,17 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         tmp = "S{0}-P{1}".format(msg.datapath.id, port_stat['port_no'])
         if tmp not in self.port_stat_links:
-            self.port_stat_links[tmp].append([port_stat['tx_packets'], port_stat['rx_packets'], (port_stat['tx_bytes'] + port_stat['rx_bytes']) / 13107200])
+            self.port_stat_links[tmp].append([port_stat['tx_packets'], port_stat['rx_packets'], port_stat['tx_bytes'], port_stat['rx_bytes']])
         else:
             past_port_stat = self.port_stat_links[tmp].pop(0)
-            self.port_stat_links[tmp].append([port_stat['tx_packets'] - past_port_stat[0], port_stat['rx_packets'] - past_port_stat[1], (port_stat['tx_bytes'] + port_stat['rx_bytes']  - past_port_stat[2]) / 13107200])
+            self.port_stat_links[tmp].append([port_stat['tx_packets'] - past_port_stat[0], port_stat['rx_packets'] - past_port_stat[1], port_stat['tx_bytes'] - past_port_stat[2], port_stat['rx_bytes'] - past_port_stat[3]])
 
         for dst_switch, values in self.adjacency[msg.datapath.id].items():
             if values == port_stat['port_no']:
                 filename = self.csv_filename["[{0}, {1}]".format(msg.datapath.id, dst_switch)]
                 if not os.path.isfile(filename):
                     self._append_list_as_row(filename, ['Timestamp', 'Tx_Packet', 'Rx_Packet', 'BW_Utilization'])
-                row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1], self.port_stat_links[tmp][0][2]]
+                row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1], (self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 13107200]
                 self._append_list_as_row(filename, row_contents)
             
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
