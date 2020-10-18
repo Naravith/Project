@@ -3,19 +3,18 @@ from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER, DEAD_DISPATCHER
 from ryu.controller.handler import MAIN_DISPATCHER, HANDSHAKE_DISPATCHER
 from ryu.controller.handler import set_ev_cls
-from ryu.ofproto import ofproto_v1_3
-from ryu.ofproto import ether
-from ryu.lib.packet import packet
-from ryu.lib.packet import ethernet
-from ryu.lib.packet import arp
-from ryu.lib.packet import ipv4
-from ryu.lib.packet import icmp
+from ryu.ofproto import ofproto_v1_3, ether
+from ryu.lib import hub
+from ryu.lib.packet import packet, ethernet, arp, ipv4
 from ryu.topology import event
 from ryu.topology.api import get_host
-from collections import defaultdict
 from ryu import utils
+from collections import defaultdict
+from operator import attrgetter
 
 import time
+import csv
+import os
 import inspect
 import random
 
@@ -38,6 +37,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.host_faucet = defaultdict(list)
         self.topo = []
         self.link_for_DL = []
+        self.best_path = {}
+        self.monitor_thread = hub.spawn(self._TrafficMonitor)
+        self.port_stat_links = defaultdict(list)
+        self.csv_filename = {}
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -58,6 +61,52 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         print("-" * 40)
         '''
 
+    def _TrafficMonitor(self):
+        while True:
+            for datapath in self.datapath_for_del:
+                for link in self.link_for_DL:
+                    if datapath.id == link[0]:
+                        self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
+            hub.sleep(1)
+
+    def _PortStatReq(self, datapath, port_no):
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+
+        req = parser.OFPPortStatsRequest(datapath=datapath, flags=0, port_no=port_no)
+        datapath.send_msg(req)
+
+    @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
+    def _port_stats_reply_handler(self, ev):
+        msg = ev.msg
+        port_stat_reply = msg.to_jsondict()
+        port_stat = port_stat_reply['OFPPortStatsReply']['body'][0]['OFPPortStats']
+
+        tmp = "S{0}-P{1}".format(msg.datapath.id, port_stat['port_no'])
+        if tmp not in self.port_stat_links:
+            self.port_stat_links[tmp].append([port_stat['tx_packets'], port_stat['rx_packets'], (port_stat['tx_bytes'] + port_stat['rx_bytes']) / 13107200])
+        else:
+            past_port_stat = self.port_stat_links[tmp].pop(0)
+            self.port_stat_links[tmp].append([port_stat['tx_packets'] - past_port_stat[0], port_stat['rx_packets'] - past_port_stat[1], (port_stat['tx_bytes'] + port_stat['rx_bytes']  - past_port_stat[2]) / 13107200])
+
+        for dst_switch, values in self.adjacency[msg.datapath.id].items():
+            if values == port_stat['port_no']:
+                filename = self.csv_filename["[{0}, {1}]".format(msg.datapath.id, dst_switch)]
+                if not os.path.isfile(filename):
+                    self._append_list_as_row(filename, ['Timestamp', 'Tx_Packet', 'Rx_Packet', 'BW_Utilization'])
+                row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1], self.port_stat_links[tmp][0][2]]
+                self._append_list_as_row(filename, row_contents)
+            
+        print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
+        print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
+        print("BW Utilization : {0}".format(self.port_stat_links[tmp][0][2]))
+        print("+" * 50)
+
+    def _append_list_as_row(self, file_name, list_of_elem):
+        with open(file_name, 'a+', newline='') as write_obj:
+            csv_writer = csv.writer(write_obj)
+            csv_writer.writerow(list_of_elem)
+
     @set_ev_cls(event.EventLinkAdd, MAIN_DISPATCHER)
     def link_add_handler(self, ev):
         s1 = ev.link.src
@@ -69,17 +118,17 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     @set_ev_cls(event.EventHostAdd, MAIN_DISPATCHER)
     def host_add_handler(self, ev):
-        '''
-        print(type(ev))
-        print(ev)
-        print(ev.host)
-        print(ev.host.ipv4)
-        print(ev.host.mac)
-        print(ev.host.port)
-        print(ev.host.port.dpid)
-        print(ev.host.port.port_no)
-        '''
-        self.host_faucet[ev.host.port.dpid].append(ev.host.port.port_no)
+        HOST = ev.host
+        #print(type(ev))
+        #print(ev)
+        #print(ev.host)
+        #print(ev.host.ipv4)
+        #print(ev.host.mac)
+        #print(ev.host.port)
+        #print(ev.host.port.dpid)
+        #print(ev.host.port.port_no)
+        self.hosts[HOST.mac] = (HOST.port.dpid, HOST.port.port_no)
+        self.host_faucet[HOST.port.dpid].append(HOST.port.port_no)
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def _switch_features_handler(self, ev):
@@ -123,21 +172,23 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         dst = eth.dst
         src = eth.src
-
+        '''
         if src not in self.hosts:
             self.hosts[src] = (dpid, in_port)
+        '''
 
         #print(time.time() - self.time_start)
-        if (time.time() - self.time_start) > 10.0 and not self.check_first_dfs:
+        if (time.time() - self.time_start) > 40.0 and not self.check_first_dfs:
             #self.check_time = False
-            print("Re-Routing")
             self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
             self.time_start = time.time()
 
+        '''
         if not self.check_time:
             for dp in self.datapath_for_del:
                 for out in self.adjacency[dp.id]:
                     self._del_flow(dp, self.adjacency[dp.id][out])
+        '''
 
         if arp_pkt and self.check_time:
             #self.logger.info("ARP processing")
@@ -181,8 +232,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self._flood(msg)
 
     def _re_routing(self, banned=[]):
-        print("Re Routing Process :")
+        print('+' * 50)
+        print("Re-Routing Process :")
         print("Banned Link Between Switch : {0} and Switch : {1}".format(banned[0], banned[1]))
+        self.best_path ={}
         for path in self.all_path:
             tmp = self.all_path[path][0]
             for alternate_path in self.all_path[path]:
@@ -192,25 +245,53 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 elif banned[0] in alternate_path and banned[1] in alternate_path and abs(alternate_path.index(banned[1]) - alternate_path.index(banned[0])) != 1:
                     tmp = alternate_path
                     break
-            print(path, "Bestpath is", tmp)
+            self.best_path.setdefault(path, {})
+            self.best_path[path] = tmp
+        
+        for i in self.best_path:
+            print(i, self.best_path[i])
+
+        for dp in self.datapath_for_del:
+            for out in self.adjacency[dp.id]:
+                self._del_flow(dp, self.adjacency[dp.id][out])
+
+        self.mac_to_port  = {}
+        for i in self.hosts:
+            self.mac_to_port.setdefault(self.hosts[i][0], {})
+            self.mac_to_port[self.hosts[i][0]][i] = self.hosts[i][1]
+        
+        for src_mac in self.hosts:
+            for dst_mac in self.hosts:
+                if src_mac != dst_mac:
+                    src_dpid, dst_dpid = self.hosts[src_mac][0], self.hosts[dst_mac][0]
+                    tmp = self.best_path[str(src_dpid) + '->' + str(dst_dpid)]
+                    for i in range(len(tmp) - 1):
+                        self.mac_to_port[tmp[i]][dst_mac] = self.adjacency[tmp[i]][tmp[i + 1]]
+        
+        print("Re-Routing Seccess ! ! !")
         print('+' * 50)
         
 
     def _get_paths(self):
+        cnt = 1
         for x in self.switches:
             for y in self.switches:
                 if x != y:
                     if y in self.adjacency[x].keys() and [x, y] not in self.link_for_DL and [x, y][::-1] not in self.link_for_DL:
                         self.link_for_DL.append([x, y])
+                        self.csv_filename.setdefault(str([x, y]), {})
+                        self.csv_filename[str([x, y])] = "./link{0}.csv".format(cnt)
+                        cnt += 1
                     key_link, mark, path = str(x) + '->' + str(y), [0] * len(self.switches), []
                     self.all_path.setdefault(key_link, {})
                     mark[x - 1] = 1
                     self._dfs(x, y, [x], self.topo, mark, path)
                     self.all_path[key_link] = sorted(path, key = len)
-        
+        '''
         print("Topology All Path :")
         for i in self.all_path:
             print(i, ":", self.all_path[i])
+        '''
 
     def _dfs(self, start, end, k, topo, mark, path):
         if k[-1] == end:
