@@ -44,7 +44,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
-        print('Switch Add')
         switch = ev.switch.dp
         ofp_parser = switch.ofproto_parser
         #print("Object Switch {0} : {1}".format(switch.id, switch.__dict__))
@@ -111,7 +110,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     @set_ev_cls(event.EventLinkAdd, MAIN_DISPATCHER)
     def link_add_handler(self, ev):
-        print('Link Add')
         s1 = ev.link.src
         s2 = ev.link.dst
         self.adjacency[s1.dpid][s2.dpid] = s1.port_no
@@ -121,7 +119,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     @set_ev_cls(event.EventHostAdd, MAIN_DISPATCHER)
     def host_add_handler(self, ev):
-        print('Host Add')
         HOST = ev.host
         #print(type(ev))
         #print(ev)
@@ -146,6 +143,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self._add_flow(datapath, 0, match, actions)
         self.datapath_for_del.append(datapath)
         print("Switch : {0} Connected".format(datapath.id))
+        print(datapath)
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
