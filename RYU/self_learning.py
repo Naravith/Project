@@ -44,6 +44,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
+        print('Switch Add')
         switch = ev.switch.dp
         ofp_parser = switch.ofproto_parser
         #print("Object Switch {0} : {1}".format(switch.id, switch.__dict__))
@@ -96,12 +97,12 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     self._append_list_as_row(filename, ['Timestamp', 'Tx_Packet', 'Rx_Packet', 'BW_Utilization'])
                 row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1], (self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 13107200]
                 self._append_list_as_row(filename, row_contents)
-            
+        ''''   
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
-        print("BW Utilization : {0} %".format((self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 13107200 * 100))
-        print("BW Utilization : {0} || Scale 0 to 1".format((self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 13107200))
+        print("BW Utilization : {0}".format(self.port_stat_links[tmp][0][2]))
         print("+" * 50)
+        '''
 
     def _append_list_as_row(self, file_name, list_of_elem):
         with open(file_name, 'a+', newline='') as write_obj:
@@ -110,6 +111,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     @set_ev_cls(event.EventLinkAdd, MAIN_DISPATCHER)
     def link_add_handler(self, ev):
+        print('Link Add')
         s1 = ev.link.src
         s2 = ev.link.dst
         self.adjacency[s1.dpid][s2.dpid] = s1.port_no
@@ -119,6 +121,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     @set_ev_cls(event.EventHostAdd, MAIN_DISPATCHER)
     def host_add_handler(self, ev):
+        print('Host Add')
         HOST = ev.host
         #print(type(ev))
         #print(ev)
