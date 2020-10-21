@@ -143,7 +143,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self._add_flow(datapath, 0, match, actions)
         self.datapath_for_del.append(datapath)
         print("Switch : {0} Connected".format(datapath.id))
-        print(datapath)
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
@@ -153,6 +152,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
        
+        print("Switch : {0}\n{1}".format(datapath.id, datapath.__dict__))
         if self.check_first_dfs:
             sum_link1, sum_link2 = 0, 0
             for dp in self.datapath_for_del:
