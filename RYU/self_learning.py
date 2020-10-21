@@ -96,12 +96,12 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     self._append_list_as_row(filename, ['Timestamp', 'Tx_Packet', 'Rx_Packet', 'BW_Utilization'])
                 row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1], (self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 13107200]
                 self._append_list_as_row(filename, row_contents)
-        ''''   
-        print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
-        print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
-        print("BW Utilization : {0}".format(self.port_stat_links[tmp][0][2]))
-        print("+" * 50)
-        '''
+        if msg.datapath.id == 1 and port_stat['port_no'] == 2
+            print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
+            print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
+            print("BW Utilization : {0}".format(self.port_stat_links[tmp][0][2]))
+            print("+" * 50)
+        
 
     def _append_list_as_row(self, file_name, list_of_elem):
         with open(file_name, 'a+', newline='') as write_obj:
