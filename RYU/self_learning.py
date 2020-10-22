@@ -112,9 +112,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                                 (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200]
                 self._append_list_as_row(filename, row_contents)
 
-        if len(self.port_stat_links[tmp]) == 2:
-            self.port_stat_links[tmp].pop(0)
-
         if msg.datapath.id == 1 and port_stat['port_no'] == 2:
             print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
             print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
@@ -124,7 +121,12 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             elif len(self.port_stat_links[tmp]) == 2:
                 print("BW Utilization (100 Mbps) : {0} %".format(((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
                                 (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200 * 100))
+            print(self.port_stat_links)
             print("+" * 50)
+
+
+        if len(self.port_stat_links[tmp]) == 2:
+            self.port_stat_links[tmp].pop(0)
         
 
     def _append_list_as_row(self, file_name, list_of_elem):
