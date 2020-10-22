@@ -119,7 +119,11 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
             print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
-            print("BW Utilization : {0}".format(self.port_stat_links[tmp][0][2]))
+            if len(self.port_stat_links[tmp]) == 1:
+                print("BW Utilization (100 Mbps) : {0} %".format((self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 13107200 * 100))
+            elif len(self.port_stat_links[tmp]) == 2:
+                print("BW Utilization (100 Mbps) : {0} %".format(((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
+                                (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200 * 100))
             print("+" * 50)
         
 
