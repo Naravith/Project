@@ -70,7 +70,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             hub.sleep(1)
 
     def _PortStatReq(self, datapath, port_no):
-        ofproto = datapath.ofproto
+        #ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
         req = parser.OFPPortStatsRequest(datapath=datapath, flags=0, port_no=port_no)
@@ -81,23 +81,43 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         msg = ev.msg
         port_stat_reply = msg.to_jsondict()
         port_stat = port_stat_reply['OFPPortStatsReply']['body'][0]['OFPPortStats']
-
+        tx_p, tx_b = port_stat['tx_packets'], port_stat['tx_bytes']
+        rx_p, rx_b = port_stat['rx_packets'], port_stat['rx_bytes']
         tmp = "S{0}-P{1}".format(msg.datapath.id, port_stat['port_no'])
+        self.port_stat_links[tmp].append([tx_p, rx_p, tx_b, rx_b])
+
+        '''
         if tmp not in self.port_stat_links:
-            self.port_stat_links[tmp].append([port_stat['tx_packets'], port_stat['rx_packets'], port_stat['tx_bytes'], port_stat['rx_bytes']])
+            self.port_stat_links[tmp].append([tx_p, rx_p, tx_b, rx_b])
         else:
-            past_port_stat = self.port_stat_links[tmp].pop(0)
-            self.port_stat_links[tmp].append([port_stat['tx_packets'] - past_port_stat[0], port_stat['rx_packets'] - past_port_stat[1], port_stat['tx_bytes'] - past_port_stat[2], port_stat['rx_bytes'] - past_port_stat[3]])
+            #past_port_stat = self.port_stat_links[tmp].pop(0)
+            self.port_stat_links[tmp].pop(0)
+            self.port_stat_links[tmp].append([tx_p, rx_p, tx_b, rx_b])
+            #self.port_stat_links[tmp].append([port_stat['tx_packets'] - past_port_stat[0], port_stat['rx_packets'] - past_port_stat[1], \
+            # port_stat['tx_bytes'] - past_port_stat[2], port_stat['rx_bytes'] - past_port_stat[3]])
+        '''
 
         for dst_switch, values in self.adjacency[msg.datapath.id].items():
             if values == port_stat['port_no']:
                 filename = self.csv_filename["[{0}, {1}]".format(msg.datapath.id, dst_switch)]
                 if not os.path.isfile(filename):
                     self._append_list_as_row(filename, ['Timestamp', 'Tx_Packet', 'Rx_Packet', 'BW_Utilization'])
-                row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1], (self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 13107200]
+                if len(self.port_stat_links[tmp]) == 1:
+                    row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], \
+                        self.port_stat_links[tmp][0][1], (self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 13107200]
+                elif len(self.port_stat_links[tmp]) == 2:
+                    row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0], \
+                        self.port_stat_links[tmp][1][1] - self.port_stat_links[tmp][0][1], \
+                            ((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
+                                (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200]
                 self._append_list_as_row(filename, row_contents)
-        if msg.datapath.id == 1 and port_stat['port_no'] == 2
+
+        if len(self.port_stat_links[tmp]) == 2:
+            self.port_stat_links[tmp].pop(0)
+
+        if msg.datapath.id == 1 and port_stat['port_no'] == 2:
             print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
+            print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
             print("BW Utilization : {0}".format(self.port_stat_links[tmp][0][2]))
             print("+" * 50)
@@ -152,7 +172,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
        
-        print("Switch : {0}\n{1}".format(datapath.id, datapath.__dict__))
+        #print("Switch : {0}\n{1}".format(datapath.id, datapath.__dict__))
         if self.check_first_dfs:
             sum_link1, sum_link2 = 0, 0
             for dp in self.datapath_for_del:
