@@ -69,8 +69,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
             if (time.time() - self.queue_for_re_routing[1]) > 30.0 and self.queue_for_re_routing[0] != []:
-                print(self.queue_for_re_routing)
-                #self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
+                self._re_routing(self.queue_for_re_routing[0])
+                self.queue_for_re_routing[1] = time.time()
             hub.sleep(1)
 
     def _PortStatReq(self, datapath, port_no):
@@ -273,17 +273,26 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def _re_routing(self, banned=[]):
         print('+' * 50)
         print("Re-Routing Process :")
-        print("Banned Link Between Switch : {0} and Switch : {1}".format(banned[0], banned[1]))
+        for ban in banned:
+            print("Banned Link Between Switch : {0} and Switch : {1}".format(ban[0], ban[1]))
         self.best_path ={}
         for path in self.all_path:
             tmp = self.all_path[path][0]
             for alternate_path in self.all_path[path]:
+                for i in range(len(banned)):
+                    if all(x in alternate_path for x in banned[i]) and abs(alternate_path.index(banned[i][1]) - alternate_path.index(banned[i][0])) == 1:
+                        break
+                else:
+                    tmp = alternate_path
+                    break
+                '''
                 if banned[0] not in alternate_path or banned[1] not in alternate_path:
                     tmp = alternate_path
                     break
                 elif banned[0] in alternate_path and banned[1] in alternate_path and abs(alternate_path.index(banned[1]) - alternate_path.index(banned[0])) != 1:
                     tmp = alternate_path
                     break
+                '''
             self.best_path.setdefault(path, {})
             self.best_path[path] = tmp
         
