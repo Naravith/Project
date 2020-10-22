@@ -91,15 +91,16 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         for dst_switch, values in self.adjacency[msg.datapath.id].items():
             if values == port_stat['port_no']:
+                print("WEWEWEW++++++  ", dst_switch, "  ++++++++WEWEWEEW")
                 filename = self.csv_filename["[{0}, {1}]".format(msg.datapath.id, dst_switch)]
                 if not os.path.isfile(filename):
                     self._append_list_as_row(filename, ['Timestamp', 'Tx_Packet', 'Rx_Packet', 'BW_Utilization'])
-                row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1], (self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 13107200]
+                row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1], (self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 3221225472]
                 self._append_list_as_row(filename, row_contents)
-        if msg.datapath.id == 1 and port_stat['port_no'] == 2
+        if msg.datapath.id == 1 and port_stat['port_no'] == 2:
             print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
-            print("BW Utilization : {0}".format(self.port_stat_links[tmp][0][2]))
+            print("BW Utilization : {0} %".format((self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 3221225472 * 100))
             print("+" * 50)
         
 
@@ -152,7 +153,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
        
-        print("Switch : {0}\n{1}".format(datapath.id, datapath.__dict__))
+        #print("Switch : {0}\n{1}".format(datapath.id, datapath.__dict__))
         if self.check_first_dfs:
             sum_link1, sum_link2 = 0, 0
             for dp in self.datapath_for_del:
