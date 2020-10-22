@@ -41,6 +41,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.monitor_thread = hub.spawn(self._TrafficMonitor)
         self.port_stat_links = defaultdict(list)
         self.csv_filename = {}
+        self.queue_for_re_routing = [[], time.time()]
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -60,13 +61,16 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             print("Switch {0} -> {1}".format(i, self.datapath_list[i].__dict__))
         print("-" * 40)
         '''
-
+#self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
     def _TrafficMonitor(self):
         while True:
             for datapath in self.datapath_for_del:
                 for link in self.link_for_DL:
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
+            if (time.time() - self.queue_for_re_routing[1]) > 30.0 and self.queue_for_re_routing[0] != []:
+                print(self.queue_for_re_routing)
+                #self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
             hub.sleep(1)
 
     def _PortStatReq(self, datapath, port_no):
@@ -103,13 +107,18 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 if not os.path.isfile(filename):
                     self._append_list_as_row(filename, ['Timestamp', 'Tx_Packet', 'Rx_Packet', 'BW_Utilization'])
                 if len(self.port_stat_links[tmp]) == 1:
+                    bw_util = (self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 13107200
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], \
-                        self.port_stat_links[tmp][0][1], (self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 13107200]
+                        self.port_stat_links[tmp][0][1], bw_util]
+                    if bw_util > 0.7:
+                        self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
                 elif len(self.port_stat_links[tmp]) == 2:
+                    bw_util = ((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
+                                (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0], \
-                        self.port_stat_links[tmp][1][1] - self.port_stat_links[tmp][0][1], \
-                            ((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
-                                (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200]
+                        self.port_stat_links[tmp][1][1] - self.port_stat_links[tmp][0][1], bw_util]
+                    if bw_util > 0.7:
+                        self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
                 self._append_list_as_row(filename, row_contents)
 
         if msg.datapath.id == 1 and port_stat['port_no'] == 2:
@@ -206,10 +215,12 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         '''
 
         #print(time.time() - self.time_start)
+        '''
         if (time.time() - self.time_start) > 40.0 and not self.check_first_dfs:
             #self.check_time = False
             self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
             self.time_start = time.time()
+        '''
 
         '''
         if not self.check_time:
@@ -225,7 +236,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self.arp_table[src_ip] = src
             if arp_pkt.opcode == arp.ARP_REQUEST:
                 if dst_ip in self.arp_table:
-                    dst_mac = self.arp_table[dst_ip]
+                    #dst_mac = self.arp_table[dst_ip]
                     #h1 = self.hosts[src]
                     #h2 = self.hosts[dst_mac]
                     if self._mac_learning(dpid, src, in_port):
