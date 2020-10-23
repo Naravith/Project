@@ -68,7 +68,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 for link in self.link_for_DL:
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
-            if (time.time() - self.queue_for_re_routing[1]) > 30.0 and self.queue_for_re_routing[0] != []:
+            if (time.time() - self.queue_for_re_routing[1]) > 10.0 and self.queue_for_re_routing[0] != []:
                 self._re_routing(self.queue_for_re_routing[0])
                 self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
             hub.sleep(1)
@@ -107,14 +107,14 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 if not os.path.isfile(filename):
                     self._append_list_as_row(filename, ['Timestamp', 'Tx_Packet', 'Rx_Packet', 'BW_Utilization'])
                 if len(self.port_stat_links[tmp]) == 1:
-                    bw_util = (self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 13107200
+                    bw_util = (self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 131072000
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], \
                         self.port_stat_links[tmp][0][1], bw_util]
                     if bw_util > 0.7 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
                         self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
                 elif len(self.port_stat_links[tmp]) == 2:
                     bw_util = ((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
-                                (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200
+                                (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 131072000
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0], \
                         self.port_stat_links[tmp][1][1] - self.port_stat_links[tmp][0][1], bw_util]
                     if bw_util > 0.7 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
@@ -126,10 +126,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
             if len(self.port_stat_links[tmp]) == 1:
-                print("BW Utilization (100 Mbps) : {0} %".format((self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 13107200 * 100))
+                print("BW Utilization (100 Mbps) : {0} %".format((self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 131072000 * 100))
             elif len(self.port_stat_links[tmp]) == 2:
                 print("BW Utilization (100 Mbps) : {0} %".format(((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
-                                (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200 * 100))
+                                (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 131072000 * 100))
             print(self.port_stat_links)
             print("+" * 50)
 
