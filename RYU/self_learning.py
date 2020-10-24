@@ -124,10 +124,13 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         if msg.datapath.id == 1 and port_stat['port_no'] == 2:
             print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
             print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
-            print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
             if len(self.port_stat_links[tmp]) == 1:
-                print("BW Utilization (100 Mbps) : {0} %".format((self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 131072000 * 100))
+                print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
+                print("BW Utilization (100 Mbps) : {0} %".format((self.port_stat_links[tmp][0][2] + \
+                    self.port_stat_links[tmp][0][3]) / 131072000 * 100))
             elif len(self.port_stat_links[tmp]) == 2:
+                print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0]\
+                    , self.port_stat_links[tmp][1][1]- self.port_stat_links[tmp][0][1]))
                 print("BW Utilization (100 Mbps) : {0} %".format(((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
                                 (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 131072000 * 100))
             print(self.port_stat_links)
@@ -275,13 +278,24 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         print("Re-Routing Process :")
         for ban in banned:
             print("Banned Link Between Switch : {0} and Switch : {1}".format(ban[0], ban[1]))
-        self.best_path ={}
+        self.best_path = {}
+        rerouting_effect = {}
         for path in self.all_path:
             tmp = self.all_path[path][0]
             for alternate_path in self.all_path[path]:
                 for i in range(len(banned)):
-                    if all(x in alternate_path for x in banned[i]) and abs(alternate_path.index(banned[i][1]) - alternate_path.index(banned[i][0])) == 1:
-                        break
+                    if all(x in alternate_path for x in banned[i]) and \
+                        abs(alternate_path.index(banned[i][1]) - alternate_path.index(banned[i][0])) == 1:
+                        dpid = path.split('->')
+                        rerouting_effect.setdefault(dpid[0], {})
+
+                        if rerouting_effect.get(dpid[1]) == None:
+                            if rerouting_effect[dpid[0]].get(path) == None:
+                                rerouting_effect[dpid[0]][path] = []
+
+                            if tmp not in rerouting_effect[dpid[0]][path]:
+                                rerouting_effect[dpid[0]][path].append(tmp)
+                                break
                 else:
                     tmp = alternate_path
                     break
@@ -296,6 +310,18 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self.best_path.setdefault(path, {})
             self.best_path[path] = tmp
         
+        for switch in rerouting_effect:
+            if rerouting_effect[i] != {}:
+                old_path, cnt = len(rerouting_effect[switch]) // 2 + \
+                    (len(rerouting_effect[switch]) % 2), 0
+                for link in rerouting_effect[switch]:
+                    if cnt == old_path:
+                        break
+                    self.best_path[link] = rerouting_effect[switch][link][0]
+                    self.best_path[link.split('->')[1] + '->' + link.split('->')[0]] = \
+                        rerouting_effect[switch][link][0][::-1]
+                    cnt += 1
+
         for i in self.best_path:
             print(i, self.best_path[i])
 
