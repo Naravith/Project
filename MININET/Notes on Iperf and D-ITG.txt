@@ -1,4 +1,4 @@
-Using IPERF commmand to send TCP, Mininet, xterm 
+[[[[ IPERF commmand to send TCP, Mininet, xterm  ]]]]
 
 [ TCP server side ] :
 command ->  iperf -s -p 5566 -i 1
@@ -49,10 +49,13 @@ after complete installation as http://sdnopenflow.blogspot.com/2015/05/using-of-
 (send after h4 ./ITGRecv -l receiver.log)
 
 description :
--C 10 = 10 packets per second are sent
-–c 100 = the size of each packet is equal to 100 bytes
+-C 10 = 10 packets per second are sent (Inter-departure time options... in pkts/s.)
+
+–c 100 = the size of each packet is equal to 100 bytes (Packet size... c for constant)
+
 -t 15000 = the duration of the generation experiment is 15 seconds
-(15000 is in milleseconds) 
+(15000 is in milleseconds)
+ 
 -T UDP = choose UDP as protocol (-T is for defining a protocol)
 
 --------------------------------------------------------
@@ -67,3 +70,52 @@ after "Finish on UDP port" message has shown
 --> ^C
 --> ./ITGDec receiver.log 
 to view the collected stats about Total packets, Average delay, Average packet rates and more...
+
+
+-----------------------------------------------------------
+
+->>> Inter-departure time options
+  -C  <rate>              Constant (default: 1000 pkts/s).
+
+  -U  <min_rate>          Uniform distribution.
+      <max_rate>
+
+  -E  <mean_rate>         Exponential distribution.
+
+  -N  <mean> <std_dev>    Normal distribution.
+
+  -O  <mean>              Poisson distribution.
+
+  -V  <shape> <scale>     Pareto distribution.
+
+  -Y  <shape> <scale>     Cauchy distribution.
+
+  -G  <shape> <scale>     Gamma distribution.
+
+  -W  <shape> <scale>     Weibull distribution.
+
+  -B  <onDistro> <params>
+      <offDistro> <params>
+                          Generate bursty traffic:
+------------------------------------------------------------
+
+->>> Packet size options
+  -c  <pkt_size>          Constant (default: 512 bytes).
+
+  -u  <min_pkt_size>      Uniform distribution.
+      <max_pkt_size>
+
+  -e  <average_pkt_size>  Exponential distribution.
+
+  -n  <mean> <std_dev>    Normal distribution.
+
+  -o  <mean>              Poisson distribution.
+
+  -v  <shape> <scale>     Pareto distribution.
+
+  -y  <shape> <scale>     Cauchy distribution.
+
+  -g  <shape> <scale>     Gamma distribution.
+
+  -w  <shape> <scale>     Weibull distribution.
+
