@@ -1,0 +1,69 @@
+Using IPERF commmand to send TCP, Mininet, xterm 
+
+[ TCP server side ] :
+command ->  iperf -s -p 5566 -i 1
+
+description: -s = server, -p 5566 = port 5566, -i 1 = monitor the results every one second
+
+[ TCP client side ] :
+command -> iperf -c 10.0.0.2 -p 5566 -t 15
+
+description: -c = client, 10.0.0.2 = server IP address,
+-t 15 = transmission duration of 15s.
+
+http://csie.nqu.edu.tw/smallko/sdn/iperf_mininet.htm
+------------------------------------------------------
+
+Using IPERF commmand to send TCP, Mininet, xterm
+
+[ UDP server side ] :
+command -> iperf -s -u -i 1
+desc: -s = server, -u = udp
+
+[ UDP client side ] :
+command -> iperf -c 10.0.0.1 -u -b 1m -n 1000
+desc: -b 1m = bandwidth =1M, -n 1000 = number of byte to send
+
+https://stackoverflow.com/questions/35869439/how-can-i-use-mininet-python-api-to-send-udp-packets-from-one-host-to-another
+-------------------------------------------------------
+
+Full Iperf guide: http://openmaniak.com/iperf.php
+
+
+
+
+
+
+==================================================================
+
+[[[[[[[[[[ D-ITG guide ]]]]]]]]]]]]]]]]
+
+
+Full D-ITG Docs : http://traffic.comics.unina.it/software/ITG/manual/index.html#SECTION00051000000000000000
+
+after complete installation as http://sdnopenflow.blogspot.com/2015/05/using-of-d-itg-traffic-generator-in.html
+
+[h1 as sender] command as follow : 
+--> cd D-ITG-2.8.1-r1023/bin
+--> ./ITGSend –T UDP  –a 10.0.0.4 –c 100 –C 10 –t 15000
+(send after h4 ./ITGRecv -l receiver.log)
+
+description :
+-C 10 = 10 packets per second are sent
+–c 100 = the size of each packet is equal to 100 bytes
+-t 15000 = the duration of the generation experiment is 15 seconds
+(15000 is in milleseconds) 
+-T UDP = choose UDP as protocol (-T is for defining a protocol)
+
+--------------------------------------------------------
+
+[h4 as receiver] :
+--> cd D-ITG-2.8.1-r1023/bin
+--> ./ITGRecv -l receiver.log (this "l" is lowercase of L, not I)
+./ITGRecv = start the receiver on the destination host
+
+
+after "Finish on UDP port" message has shown
+--> ^C
+--> ./ITGDec receiver.log 
+to view the collected stats about Total packets, Average delay, Average packet rates and more...
