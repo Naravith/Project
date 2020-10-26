@@ -119,3 +119,49 @@ to view the collected stats about Total packets, Average delay, Average packet r
 
   -w  <shape> <scale>     Weibull distribution.
 
+============================================================================================
+
+
+-- Phase 1 รวม 2 นาที (120,000 ms), ครึ่งละ 1 นาที แล้วจึงสลับ host/server -- 
+
+script_file_1 for h1 (begin as server,then host)
+-a 10.0.0.6 -U 400 600 -u 8500 10000 -T TCP -t 48000
+-a 10.0.0.6 -C 1000 -c 20000 -T UDP -t 54000
+-a 10.0.0.6 -E 750 -e 8000 -T TCP -t 60000
+
+script_file_2 for h2 (begin as server,then host)
+-a 10.0.0.4 -E 300 -e 7500 -T UDP -t 60000 
+-a 10.0.0.4 -O 200 -o 4500 -T TCP -t 50000
+-a 10.0.0.4 -C 1000 -c 3000 -T TCP -t 45000
+
+
+script_file_3 for h3 
+-a 10.0.0.5 -C 200 -c 10000 -T TCP -t 120000 
+-a 10.0.0.5 -U 200 500 -u 5000 7000 -T UDP -t 100000
+-a 10.0.0.5 -O 450 -o 6000 TCP -t 110000
+
+
+script_file_4 for h4
+-a 10.0.0.2 -E 300 -e 7500 -T UDP -t 60000 
+-a 10.0.0.2 -O 200 -o 4500 -T TCP -t 50000
+-a 10.0.0.2 -C 1000 -c 3000 -T TCP -t 45000
+
+
+script_file_5 for h5 (as a server till the end of phase)
+
+
+
+
+script_file_6 for h6
+-a 10.0.0.1 -U 400 600 -u 8500 10000 -T TCP -t 48000
+-a 10.0.0.1 -C 1000 -c 20000 -T UDP -t 54000
+-a 10.0.0.1 -E 750 -e 8000 -T TCP -t 60000
+
+
+
+
+
+
+
+
+
