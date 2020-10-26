@@ -103,38 +103,43 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         for dst_switch, values in self.adjacency[msg.datapath.id].items():
             if values == port_stat['port_no']:
+                check_more_than_zero = True
                 filename = self.csv_filename["[{0}, {1}]".format(msg.datapath.id, dst_switch)]
                 if not os.path.isfile(filename):
                     self._append_list_as_row(filename, ['Timestamp', 'Tx_Packet', 'Rx_Packet', 'BW_Utilization'])
                 if len(self.port_stat_links[tmp]) == 1:
-                    bw_util = (self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 131072000
+                    bw_util = (self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 1310700
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], \
                         self.port_stat_links[tmp][0][1], bw_util]
                     if bw_util > 0.7 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
                         self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
+                    if bw_util < 1e-06:
+                        check_more_than_zero = False
                 elif len(self.port_stat_links[tmp]) == 2:
                     bw_util = ((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
-                                (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 131072000
+                                (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0], \
                         self.port_stat_links[tmp][1][1] - self.port_stat_links[tmp][0][1], bw_util]
                     if bw_util > 0.7 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
                         self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
-                self._append_list_as_row(filename, row_contents)
+                    if bw_util < 1e-06:
+                        check_more_than_zero = False
+                if check_more_than_zero:
+                    self._append_list_as_row(filename, row_contents)
 
-        if msg.datapath.id == 1 and port_stat['port_no'] == 2:
-            print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
-            print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
-            if len(self.port_stat_links[tmp]) == 1:
-                print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
-                print("BW Utilization (100 Mbps) : {0} %".format((self.port_stat_links[tmp][0][2] + \
-                    self.port_stat_links[tmp][0][3]) / 131072000 * 100))
-            elif len(self.port_stat_links[tmp]) == 2:
-                print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0]\
-                    , self.port_stat_links[tmp][1][1]- self.port_stat_links[tmp][0][1]))
-                print("BW Utilization (100 Mbps) : {0} %".format(((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
-                                (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 131072000 * 100))
-            print(self.port_stat_links)
-            print("+" * 50)
+        print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
+        print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
+        if len(self.port_stat_links[tmp]) == 1:
+            print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
+            print("BW Utilization (100 Mbps) : {0} %".format((self.port_stat_links[tmp][0][2] + \
+                self.port_stat_links[tmp][0][3]) / 13107200 * 100))
+        elif len(self.port_stat_links[tmp]) == 2:
+            print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0]\
+                , self.port_stat_links[tmp][1][1]- self.port_stat_links[tmp][0][1]))
+            print("BW Utilization (100 Mbps) : {0} %".format(((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
+                            (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200 * 100))
+        print(self.port_stat_links)
+        print("+" * 50)
 
 
         if len(self.port_stat_links[tmp]) == 2:

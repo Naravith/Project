@@ -12,7 +12,7 @@ class MyTopo( Topo ):
         info('*** Adding Hosts\n')
         Host = []
         number_host = 6
-        bw_eth = 1000
+        bw_eth = 100
         for i in ['h'+str(i+1) for i in range(number_host)]:
             Host.append(self.addHost(i))
 
