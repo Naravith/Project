@@ -115,7 +115,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self.port_stat_links[tmp][0][1], bw_util]
                     if bw_util > 0.7 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
                         self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
-                    if bw_util < 1e-06:
+                    if bw_util < 1e-03:
                         check_more_than_zero = False
                 elif len(self.port_stat_links[tmp]) == 2:
                     bw_util = ((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
@@ -124,7 +124,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self.port_stat_links[tmp][1][1] - self.port_stat_links[tmp][0][1], bw_util]
                     if bw_util > 0.7 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
                         self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
-                    if bw_util < 1e-06:
+                    if bw_util < 1e-03:
                         check_more_than_zero = False
                 if check_more_than_zero:
                     self._append_list_as_row(filename, row_contents)
