@@ -111,7 +111,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 if not os.path.isfile(filename):
                     self._append_list_as_row(filename, ['Timestamp', 'Tx_Packet', 'Rx_Packet', 'Dropped', 'BW_Utilization'])
                 if len(self.port_stat_links[tmp]) == 1:
-                    bw_util = (self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3]) / 1310700
+                    bw_util = (self.port_stat_links[tmp][0][2] + self.port_stat_links[tmp][0][3])# / 1310700
                     dropped = self.port_stat_links[tmp][0][4] + self.port_stat_links[tmp][0][5]
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], \
                         self.port_stat_links[tmp][0][1], dropped, bw_util]
@@ -123,7 +123,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
                 elif len(self.port_stat_links[tmp]) == 2:
                     bw_util = ((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
-                                (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200
+                                (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3]))# / 13107200
                     dropped = (self.port_stat_links[tmp][1][4] - self.port_stat_links[tmp][0][4]) + \
                         (self.port_stat_links[tmp][1][5] - self.port_stat_links[tmp][0][5])
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0], \
@@ -142,15 +142,15 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         if len(self.port_stat_links[tmp]) == 1:
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
             print("Link_Dropped : {0} packets".format(self.port_stat_links[tmp][0][4] + self.port_stat_links[tmp][0][5]))
-            print("BW Utilization (100 Mbps) : {0} %".format((self.port_stat_links[tmp][0][2] + \
-                self.port_stat_links[tmp][0][3]) / 13107200 * 100))
+            print("BW Utilization (100 Mbps) : {0} %".format(self.port_stat_links[tmp][0][2] + \
+                self.port_stat_links[tmp][0][3])) #/ 13107200 * 100))
         elif len(self.port_stat_links[tmp]) == 2:
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0]\
                 , self.port_stat_links[tmp][1][1]- self.port_stat_links[tmp][0][1]))
             print("Link_Dropped : {0} packets".format((self.port_stat_links[tmp][1][4] - self.port_stat_links[tmp][0][4]) + \
                         (self.port_stat_links[tmp][1][5] - self.port_stat_links[tmp][0][5])))
-            print("BW Utilization (100 Mbps) : {0} %".format(((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
-                            (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200 * 100))
+            print("BW Utilization (100 Mbps) : {0} %".format((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
+                            (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])))# / 13107200 * 100))
         #print(self.port_stat_links)
         print("+" * 50)
 
