@@ -142,14 +142,14 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         if len(self.port_stat_links[tmp]) == 1:
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
             print("Link_Dropped : {0} packets".format(self.port_stat_links[tmp][0][4] + self.port_stat_links[tmp][0][5]))
-            print("BW Utilization (100 Mbps) : {0} %".format(self.port_stat_links[tmp][0][2] + \
+            print("BW Utilization (100 Mbps) : {0} Bytes".format(self.port_stat_links[tmp][0][2] + \
                 self.port_stat_links[tmp][0][3])) #/ 13107200 * 100))
         elif len(self.port_stat_links[tmp]) == 2:
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0]\
                 , self.port_stat_links[tmp][1][1]- self.port_stat_links[tmp][0][1]))
             print("Link_Dropped : {0} packets".format((self.port_stat_links[tmp][1][4] - self.port_stat_links[tmp][0][4]) + \
                         (self.port_stat_links[tmp][1][5] - self.port_stat_links[tmp][0][5])))
-            print("BW Utilization (100 Mbps) : {0} %".format((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
+            print("BW Utilization (100 Mbps) : {0} Bytes".format((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
                             (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])))# / 13107200 * 100))
         #print(self.port_stat_links)
         print("+" * 50)
