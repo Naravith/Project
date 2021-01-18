@@ -257,9 +257,11 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             self.arp_table[src_ip] = src
             if arp_pkt.opcode == arp.ARP_REQUEST:
                 if dst_ip in self.arp_table:
-                    #dst_mac = self.arp_table[dst_ip]
-                    #h1 = self.hosts[src]
-                    #h2 = self.hosts[dst_mac]
+                    '''
+                    dst_mac = self.arp_table[dst_ip]
+                    h1 = self.hosts[src]
+                    h2 = self.hosts[dst_mac]
+                    '''
                     if self._mac_learning(dpid, src, in_port):
                         self._arp_forwarding(msg, src_ip, dst_ip, eth)
                 else:
