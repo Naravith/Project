@@ -1,0 +1,4 @@
+1. แก้ Algorithm ใหม่
+2. ทำ Evaluation Method
+3. นำ Deep กับ SDN มารวมกัน
+4. ทำงานวิจัยเปรียบเทียบ
