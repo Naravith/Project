@@ -267,8 +267,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self._arp_forwarding(msg, src_ip, dst_ip, eth)
 
             elif arp_pkt.opcode == arp.ARP_REPLY:
-                #h1 = self.hosts[src]
-                #h2 = self.hosts[dst]
+                '''
+                h1 = self.hosts[src]
+                h2 = self.hosts[dst]
+                '''
                 if self._mac_learning(dpid, src, in_port):
                     self._arp_forwarding(msg, src_ip, dst_ip, eth)
 
