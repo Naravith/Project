@@ -1,0 +1,13 @@
+How to get Throughput in OpenFlow Networks We use OpenFlow 1.3 and Ryu Controller ?
+
+For Ryu Controller using OpenFlow, you may need to calculate based on statistics data received in OFPPortStats as part of OPFPortStatsReply for which you may need to use OFPPortStatsRequest message, to request port statistics info. Similarly, you can parse the OFPFlowStats of OPFFlowStatsReply message for flow based statistics calculation which shall be received as response for the request message OFPFlowStatsRequest.
+
+OFPFlowStatsRequest can be used to get statistical information related to flow entry with switch. The requested target flow entry can be identified by conditions such as table ID, output port, cookie value and match but here all entries are made subject to the request.
+
+OFPPortStatsRequest can be used to get port-related statistical information with switch. It is possible to specify the desired port number to acquire information from and OFPP_ANY can be specified to request information from all ports.
+
+You may need to ceate an event handler that receives the PortStatsReply message. OPFPortStatsReply class’s attribute body is the list of OFPPortStats. The OFPPortStats has statistical information such as port numbers, -->""send/receive packet count"" <-- ,respectively, byte count, drop count, error count, frame error count, overrun count, CRC error count, and collision count.
+
+You may need to define a stats thread that send above requests messages and parse reply messages periodically. Once the statistics data it available, iterate/parse through the statistics information and compute bandwidth usage .
+
+There are many other kind of requests you can perform and operate on the responses for which you can refer to http://osrg.github.io/ryu-book/en/html/traffic_monitor.html.
