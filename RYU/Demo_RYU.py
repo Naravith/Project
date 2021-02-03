@@ -209,10 +209,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
 
-        if datapath.id == 1:
-            print("Switch : {0}\n{1}".format(datapath.id, pkt.get_protocol(ipv4.ipv4)))
-            print("+" * 70)
-
         if self.check_first_dfs:
             sum_link1, sum_link2 = 0, 0
             for dp in self.datapath_for_del:
@@ -234,6 +230,11 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         dst = eth.dst
         src = eth.src
+
+        if datapath.id == 1:
+            print("Switch : {0}\n{1}".format(datapath.id, pkt.get_protocol(ipv4.ipv4)))
+            print("+" * 70)
+
         '''
         if src not in self.hosts:
             self.hosts[src] = (dpid, in_port)
