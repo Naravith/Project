@@ -137,9 +137,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 if check_more_than_zero:
                     self._append_list_as_row(filename, row_contents)
         
+        '''
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
-        '''
         if len(self.port_stat_links[tmp]) == 1:
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
             print("Link_Dropped : {0} packets".format(self.port_stat_links[tmp][0][4] + self.port_stat_links[tmp][0][5]))
@@ -210,10 +210,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         in_port = msg.match['in_port']
 
         if datapath.id == 1:
-            req = parser.OFPPortStatsRequest(datapath=datapath, flags=0, port_no=1)
-            datapath.send_msg(req)
-            #print("Switch : {0}\n{1}".format(datapath.id, datapath.__dict__))
-            #print("+" * 70)
+            print("Switch : {0}\n{1}".format(datapath.id, pkt.get_protocol(ipv4.ipv4)))
+            print("+" * 70)
 
         if self.check_first_dfs:
             sum_link1, sum_link2 = 0, 0
