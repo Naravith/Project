@@ -209,8 +209,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         in_port = msg.match['in_port']
 
         if datapath.id == 1:
-            print("Switch : {0}\n{1}".format(datapath.id, datapath.__dict__))
-            print("+" * 70)
+            req = parser.OFPPortStatsRequest(datapath=datapath, flags=0, port_no=1)
+            datapath.send_msg(req)
+            #print("Switch : {0}\n{1}".format(datapath.id, datapath.__dict__))
+            #print("+" * 70)
 
         if self.check_first_dfs:
             sum_link1, sum_link2 = 0, 0
