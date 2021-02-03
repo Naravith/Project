@@ -388,11 +388,11 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     mark[x - 1] = 1
                     self._dfs(x, y, [x], self.topo, mark, path)
                     self.all_path[key_link] = sorted(path, key = len)
-        '''
+        
         print("Topology All Path :")
         for i in self.all_path:
             print(i, ":", self.all_path[i])
-        '''
+        
 
     def _dfs(self, start, end, k, topo, mark, path):
         if k[-1] == end:
