@@ -136,7 +136,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
                 if check_more_than_zero:
                     self._append_list_as_row(filename, row_contents)
-
+        '''
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
         if len(self.port_stat_links[tmp]) == 1:
@@ -153,7 +153,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                             (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200 * 100))
         #print(self.port_stat_links)
         print("+" * 50)
-
+        '''
 
         if len(self.port_stat_links[tmp]) == 2:
             self.port_stat_links[tmp].pop(0)
@@ -209,6 +209,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         in_port = msg.match['in_port']
        
         print("Switch : {0}\n{1}".format(datapath.id, datapath.__dict__))
+        print("+" * 70)
+        
         if self.check_first_dfs:
             sum_link1, sum_link2 = 0, 0
             for dp in self.datapath_for_del:
