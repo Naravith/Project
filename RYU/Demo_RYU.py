@@ -208,7 +208,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
        
-        #print("Switch : {0}\n{1}".format(datapath.id, datapath.__dict__))
+        print("Switch : {0}\n{1}".format(datapath.id, datapath.__dict__))
         if self.check_first_dfs:
             sum_link1, sum_link2 = 0, 0
             for dp in self.datapath_for_del:
