@@ -231,9 +231,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         dst = eth.dst
         src = eth.src
 
-        if datapath.id == 1:
-            print("Switch : {0}\n{1}".format(datapath.id, pkt.get_protocol(ipv4.ipv4)))
-            print("+" * 70)
+        
+        print("Switch : {0}\nip_pkt : {1}\npkt : {2}".format(datapath.id, ip_pkt, pkt))
+        print("+" * 70)
 
         '''
         if src not in self.hosts:
