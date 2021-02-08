@@ -64,17 +64,20 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 #self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
     def _TrafficMonitor(self):
         while True:
+            #print(self.link_for_DL)
+            #print('+' * 70)
             for datapath in self.datapath_for_del:
+                self._FlowStatReq(datapath)
                 for link in self.link_for_DL:
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
-                        self._FlowStatReq(datapath)
+                        #self._FlowStatReq(datapath)
             '''
             if (time.time() - self.queue_for_re_routing[1]) > 10.0 and self.queue_for_re_routing[0] != []:
                 self._re_routing(self.queue_for_re_routing[0])
                 self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
             '''
-            hub.sleep(1)
+            hub.sleep(2)
 
     def _FlowStatReq(self, datapath):
         #ofproto = datapath.ofproto
@@ -93,6 +96,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
     def _flow_stats_reply_handler(self, ev):
         body = ev.msg.body
+        #print(self.mac_to_port)
+        #print('+' * 70)
         
         self.logger.info('datapath         '
                          'in-port  eth-dst           '
@@ -100,6 +105,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.logger.info('---------------- '
                          '-------- ----------------- '
                          '-------- -------- --------')
+        
         for stat in sorted([flow for flow in body if flow.priority == 1],
                            key=lambda flow: (flow.match['in_port'],
                                              flow.match['eth_dst'])):
