@@ -67,7 +67,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             #print(self.link_for_DL)
             #print('+' * 70)
             for datapath in self.datapath_for_del:
-                self._FlowStatReq(datapath)
                 for link in self.link_for_DL:
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
