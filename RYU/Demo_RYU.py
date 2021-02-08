@@ -5,7 +5,7 @@ from ryu.controller.handler import MAIN_DISPATCHER, HANDSHAKE_DISPATCHER
 from ryu.controller.handler import set_ev_cls
 from ryu.ofproto import ofproto_v1_3, ether
 from ryu.lib import hub
-from ryu.lib.packet import packet, ethernet, arp, ipv4
+from ryu.lib.packet import packet, ethernet, arp, ipv4, tcp, udp
 from ryu.topology import event
 from ryu.topology.api import get_host
 from ryu import utils
@@ -258,11 +258,18 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         eth = pkt.get_protocols(ethernet.ethernet)[0]
         arp_pkt = pkt.get_protocol(arp.arp)
         ip_pkt = pkt.get_protocol(ipv4.ipv4)
+        tcp_pkt = pkt.get_protocol(tcp.tcp)
+        udp_pkt = pkt.get_protocol(udp.udp)
 
         dst = eth.dst
         src = eth.src
         
-        print("Switch : {0}\nip_pkt : {1}\npkt : {2}".format(datapath.id, ip_pkt, pkt))
+        print("Switch : {0}\n".format(datapath.id))
+        print("\nEth pkt: {0}".format(eth))
+        print("\nIPV4 pkt: {0}".format(ip_pkt))
+        print("\nARP pkt: {0}".format(arp_pkt))
+        print("\nTCP pkt: {0}".format(tcp_pkt))
+        print("\nUDP pkt: {0}".format(udp_pkt))
         print("+" * 70)
 
         '''
