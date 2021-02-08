@@ -96,11 +96,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
     def _flow_stats_reply_handler(self, ev):
         body = ev.msg.body
-        msg = ev.msg
-
-        pkt = packet.Packet(msg.data)
-        print(pkt)
-        print('+' * 70)
         
         self.logger.info('datapath         '
                          'in-port  eth-dst           '
@@ -266,10 +261,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         dst = eth.dst
         src = eth.src
-
         
-        #print("Switch : {0}\nip_pkt : {1}\npkt : {2}".format(datapath.id, ip_pkt, pkt))
-        #print("+" * 70)
+        print("Switch : {0}\nip_pkt : {1}\npkt : {2}".format(datapath.id, ip_pkt, pkt))
+        print("+" * 70)
 
         '''
         if src not in self.hosts:
