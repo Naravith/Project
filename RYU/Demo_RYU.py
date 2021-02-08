@@ -264,13 +264,26 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         dst = eth.dst
         src = eth.src
         
-        print("Switch : {0}\n".format(datapath.id))
+        '''
         print("\nEth pkt: {0}".format(eth))
         print("\nIPV4 pkt: {0}".format(ip_pkt))
         print("\nARP pkt: {0}".format(arp_pkt))
         print("\nTCP pkt: {0}".format(tcp_pkt))
         print("\nUDP pkt: {0}".format(udp_pkt))
         print("+" * 70)
+        '''
+
+        if udp_pkt:
+            print("Switch : {0}\n".format(datapath.id))
+            print("Eth pkt: {0}\n".format(eth))
+            print("UDP pkt: {0}".format(udp_pkt))
+            print("+" * 70)
+
+        elif tcp_pkt:
+            print("Switch : {0}\n".format(datapath.id))
+            print("Eth pkt: {0}\n".format(eth))
+            print("TCP pkt: {0}".format(tcp_pkt))
+            print("+" * 70)
 
         '''
         if src not in self.hosts:
