@@ -93,9 +93,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
     def _flow_stats_reply_handler(self, ev):
         body = ev.msg.body
+        msg = ev.msg
 
         print("Switch :", ev.msg.datapath.id, "\n")
-        print(body)
+        print(msg.to_jsondict())
         print("+" * 50)
         '''
         self.logger.info('datapath         '
