@@ -100,6 +100,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         print(flow_stat_reply)
 
         print("\nSwitch :", ev.msg.datapath.id, "\n")
+        print(self.mac_to_port, "\n")
         for i in flow_stat_reply['OFPFlowStatsReply']['body']:
             if i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'] != []:
                 in_port = i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'][0]['OXMTlv']['value']
@@ -109,7 +110,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 pkt_count = i['OFPFlowStats']['packet_count']
 
                 print("in_port : {0}\neth_dst : {2}\nout_port : {1}\npkt : {4}\nbyte : {3}".format(in_port, out_port, eth_dst, byte_count, pkt_count))
-                
+                print("\n\n", i['OFPFlowStats'], "\n")
                 print("*" * 70)
 
         
