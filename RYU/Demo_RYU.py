@@ -96,21 +96,21 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         msg = ev.msg
 
         flow_stat_reply = msg.to_jsondict()
-        
+
         print(flow_stat_reply)
 
         print("\nSwitch :", ev.msg.datapath.id, "\n")
         for i in flow_stat_reply['OFPFlowStatsReply']['body']:
-    
-            in_port = i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'][0]['OXMTlv']['value']
-            out_port = i['OFPFlowStats']['instructions'][0]['OFPInstructionActions']['actions'][0]['OFPActionOutput']['port']
-            eth_dst = i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'][1]['OXMTlv']['value']
-            byte_count = i['OFPFlowStats']['byte_count']
-            pkt_count = i['OFPFlowStats']['packet_count']
+            if i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'] != []:
+                in_port = i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'][0]['OXMTlv']['value']
+                out_port = i['OFPFlowStats']['instructions'][0]['OFPInstructionActions']['actions'][0]['OFPActionOutput']['port']
+                eth_dst = i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'][1]['OXMTlv']['value']
+                byte_count = i['OFPFlowStats']['byte_count']
+                pkt_count = i['OFPFlowStats']['packet_count']
 
-            print("in_port : {0}\neth_dst : {2}\nout_port : {1}\npkt : {4}\nbyte : {3}".format(in_port, out_port, eth_dst, byte_count, pkt_count))
-            
-            print("*" * 70)
+                print("in_port : {0}\neth_dst : {2}\nout_port : {1}\npkt : {4}\nbyte : {3}".format(in_port, out_port, eth_dst, byte_count, pkt_count))
+                
+                print("*" * 70)
 
         
         self.logger.info('datapath         '
