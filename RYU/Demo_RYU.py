@@ -93,7 +93,11 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
     def _flow_stats_reply_handler(self, ev):
         body = ev.msg.body
-        
+
+        print("Switch :", ev.msg.datapath.id, "\n")
+        print(body)
+        print("+" * 50)
+        '''
         self.logger.info('datapath         '
                          'in-port  eth-dst           '
                          'out-port packets  bytes')
@@ -109,6 +113,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                              stat.match['in_port'], stat.match['eth_dst'],
                              stat.instructions[0].actions[0].port,
                              stat.packet_count, stat.byte_count)
+        '''
 
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
     def _port_stats_reply_handler(self, ev):
@@ -164,7 +169,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
                 if check_more_than_zero:
                     self._append_list_as_row(filename, row_contents)
-
+        '''
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
         if len(self.port_stat_links[tmp]) == 1:
@@ -181,6 +186,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                             (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200 * 100))
         #print(self.port_stat_links)
         print("+" * 50)
+        '''
 
 
         if len(self.port_stat_links[tmp]) == 2:
