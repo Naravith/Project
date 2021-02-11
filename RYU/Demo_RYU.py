@@ -5,7 +5,7 @@ from ryu.controller.handler import MAIN_DISPATCHER, HANDSHAKE_DISPATCHER
 from ryu.controller.handler import set_ev_cls
 from ryu.ofproto import ofproto_v1_3, ether
 from ryu.lib import hub
-from ryu.lib.packet import packet, ethernet, arp, ipv4, tcp, udp
+from ryu.lib.packet import packet, ethernet, arp, ipv4
 from ryu.topology import event
 from ryu.topology.api import get_host
 from ryu import utils
@@ -64,32 +64,30 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 #self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
     def _TrafficMonitor(self):
         while True:
-            #print(self.link_for_DL)
-            #print('+' * 70)
             for datapath in self.datapath_for_del:
+                self._FlowStatReq(datapath)
                 for link in self.link_for_DL:
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
-                        #self._FlowStatReq(datapath)
             '''
             if (time.time() - self.queue_for_re_routing[1]) > 10.0 and self.queue_for_re_routing[0] != []:
                 self._re_routing(self.queue_for_re_routing[0])
                 self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
             '''
-            hub.sleep(2)
-
-    def _FlowStatReq(self, datapath):
-        #ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-
-        req = parser.OFPFlowStatsRequest(datapath)
-        datapath.send_msg(req)
+            hub.sleep(1)
 
     def _PortStatReq(self, datapath, port_no):
         #ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
         req = parser.OFPPortStatsRequest(datapath=datapath, flags=0, port_no=port_no)
+        datapath.send_msg(req)
+
+    def _FlowStatReq(self, datapath):
+        #ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+
+        req = parser.OFPFlowStatsRequest(datapath)
         datapath.send_msg(req)
 
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
@@ -166,8 +164,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
                 if check_more_than_zero:
                     self._append_list_as_row(filename, row_contents)
-        
-        '''
+
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
         if len(self.port_stat_links[tmp]) == 1:
@@ -184,7 +181,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                             (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200 * 100))
         #print(self.port_stat_links)
         print("+" * 50)
-        '''
+
 
         if len(self.port_stat_links[tmp]) == 2:
             self.port_stat_links[tmp].pop(0)
@@ -238,7 +235,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         dpid = datapath.id
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
-
+       
+        #print("Switch : {0}\n{1}".format(datapath.id, datapath.__dict__))
         if self.check_first_dfs:
             sum_link1, sum_link2 = 0, 0
             for dp in self.datapath_for_del:
@@ -257,33 +255,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         eth = pkt.get_protocols(ethernet.ethernet)[0]
         arp_pkt = pkt.get_protocol(arp.arp)
         ip_pkt = pkt.get_protocol(ipv4.ipv4)
-        tcp_pkt = pkt.get_protocol(tcp.tcp)
-        udp_pkt = pkt.get_protocol(udp.udp)
 
         dst = eth.dst
         src = eth.src
-        
-        '''
-        print("\nEth pkt: {0}".format(eth))
-        print("\nIPV4 pkt: {0}".format(ip_pkt))
-        print("\nARP pkt: {0}".format(arp_pkt))
-        print("\nTCP pkt: {0}".format(tcp_pkt))
-        print("\nUDP pkt: {0}".format(udp_pkt))
-        print("+" * 70)
-        '''
-
-        if udp_pkt:
-            print("Switch : {0}\n".format(datapath.id))
-            print("Eth pkt: {0}\n".format(eth))
-            print("UDP pkt: {0}".format(udp_pkt))
-            print("+" * 70)
-
-        elif tcp_pkt:
-            print("Switch : {0}\n".format(datapath.id))
-            print("Eth pkt: {0}\n".format(eth))
-            print("TCP pkt: {0}".format(tcp_pkt))
-            print("+" * 70)
-
         '''
         if src not in self.hosts:
             self.hosts[src] = (dpid, in_port)
@@ -437,11 +411,11 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     mark[x - 1] = 1
                     self._dfs(x, y, [x], self.topo, mark, path)
                     self.all_path[key_link] = sorted(path, key = len)
-        
+        '''
         print("Topology All Path :")
         for i in self.all_path:
             print(i, ":", self.all_path[i])
-        
+        '''
 
     def _dfs(self, start, end, k, topo, mark, path):
         if k[-1] == end:
