@@ -74,7 +74,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 self._re_routing(self.queue_for_re_routing[0])
                 self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
             '''
-            hub.sleep(1)
+            hub.sleep(2)
 
     def _PortStatReq(self, datapath, port_no):
         #ofproto = datapath.ofproto
@@ -96,6 +96,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         msg = ev.msg
 
         flow_stat_reply = msg.to_jsondict()
+        
+        print(flow_stat_reply)
 
         print("\nSwitch :", ev.msg.datapath.id, "\n")
         for i in flow_stat_reply['OFPFlowStatsReply']['body']:
@@ -108,7 +110,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
             print("in_port : {0}\neth_dst : {2}\nout_port : {1}\npkt : {4}\nbyte : {3}".format(in_port, out_port, eth_dst, byte_count, pkt_count))
             
-        print("*" * 70)
+            print("*" * 70)
 
         
         self.logger.info('datapath         '
