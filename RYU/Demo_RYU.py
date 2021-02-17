@@ -142,7 +142,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 self.flow_stat_links[tmp].pop(0)
             
             if len(self.flow_stat_links[tmp]) == 2:
-                if (self.flow_stat_links[tmp][1][0] - self.flow_stat_links[tmp][0][0]) > 1000:
+                if (self.flow_stat_links[tmp][1][0] - self.flow_stat_links[tmp][0][0]) > 10000:
                     if (i not in self.flow_timestamp) or (len(self.flow_timestamp[i]) == 0):
                         self.flow_timestamp[i].append(self.flow_stat_links[tmp][0].copy())
                 else:
