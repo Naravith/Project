@@ -98,22 +98,33 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         flow_stat_reply = msg.to_jsondict()
 
         print(flow_stat_reply)
-
+        #แก้ eth_type 2054 (ARP)
         print("\nSwitch :", ev.msg.datapath.id, "\n")
         print(self.mac_to_port, "\n")
         for i in flow_stat_reply['OFPFlowStatsReply']['body']:
             if i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'] != []:
-                in_port = i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'][0]['OXMTlv']['value']
+                
                 out_port = i['OFPFlowStats']['instructions'][0]['OFPInstructionActions']['actions'][0]['OFPActionOutput']['port']
-                eth_dst = i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'][1]['OXMTlv']['value']
                 byte_count = i['OFPFlowStats']['byte_count']
                 pkt_count = i['OFPFlowStats']['packet_count']
+                in_port = -1
+                eth_dst = -1
+                eth_type = -1
 
-                print("in_port : {0}\neth_dst : {2}\nout_port : {1}\npkt : {4}\nbyte : {3}".format(in_port, out_port, eth_dst, byte_count, pkt_count))
-                print("\n\n", i['OFPFlowStats'], "\n")
-                print("*" * 70)
+                for j in i['OFPFlowStats']['match']['OFPMatch']['oxm_fields']:
+                    if j['OXMTlv']['field'] == 'in_port':
+                        in_port = j['OXMTlv']['value']
+                    elif j['OXMTlv']['field'] == 'eth_dst': 
+                        eth_dst = j['OXMTlv']['value']
+                    elif j['OXMTlv']['field'] == 'eth_type':
+                        eth_type = j['OXMTlv']['value']
 
-        
+                if eth_type not in [2054, 35020]:
+                    print("in_port : {0}\nout_port : {1}\neth_dst : {2}\nbyte : {3}\npkt : {4}\neth_type : {5}\n".format(in_port, out_port, eth_dst, byte_count, pkt_count, eth_type))
+                    #print("\n\n", i['OFPFlowStats'], "\n")
+                    print("*" * 70)
+
+        '''
         self.logger.info('datapath         '
                          'in-port  eth-dst           '
                          'out-port packets  bytes')
@@ -129,8 +140,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                              stat.match['in_port'], stat.match['eth_dst'],
                              stat.instructions[0].actions[0].port,
                              stat.packet_count, stat.byte_count)
-        
         print("+" * 70)
+        '''
 
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
     def _port_stats_reply_handler(self, ev):
