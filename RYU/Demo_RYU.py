@@ -67,9 +67,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def _TrafficMonitor(self):
         while True:
             for datapath in self.datapath_for_del:
-                print(time.time() - self.time_start)
-                if (time.time() - self.time_start) > 30:
-                    print("+++ Send Flow Stat Msg +++")
+                if (time.time() - self.time_start) > 20:
                     self._FlowStatReq(datapath)
                 for link in self.link_for_DL:
                     if datapath.id == link[0]:
@@ -106,6 +104,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         for i in self.host_faucet.keys():
             sum_bytes[i] = 0
 
+        print(sum_bytes)
+
         print("\nSwitch :", ev.msg.datapath.id, "\n")
 
         for i in flow_stat_reply['OFPFlowStatsReply']['body']:
@@ -129,9 +129,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 if eth_type not in [2054, 35020]:
                     for host_port in self.host_faucet[ev.msg.datapath.id]:
                         if out_port == host_port:
-                            sum_bytes[eth_dst] += byte_count
                             print("in_port : {0}\nout_port : {1}\neth_dst : {2}\nbyte : {3}\npkt : {4}\neth_type : {5}\n".format(in_port, out_port, eth_dst, byte_count, pkt_count, eth_type))
                             print("*" * 50)
+                            print(eth_dst, type(eth_dst))
+                            sum_bytes[eth_dst] += byte_count
         
         print(self.host_faucet)
         for i in [k for k, v in self.host_faucet.items() if v[0] == ev.msg.datapath.id]:
