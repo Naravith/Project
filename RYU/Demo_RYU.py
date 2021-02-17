@@ -164,7 +164,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
                     if throughput != -1:
                         print("Host {0}\nThroughput : {1} Mbits / sec\nX-axis : {2} Pkt / sec".format(i, throughput, pktpersec))
-                        filename = "Host_{0}".format(i)
+                        filename = "Host_{0}.csv".format(i)
                         if not os.path.isfile(filename):
                             self._append_list_as_row(filename, ['Throughput', 'Pkt/sec'])
                         self._append_list_as_row(filename, [throughput, pktpersec])
