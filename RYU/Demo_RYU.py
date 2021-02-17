@@ -100,7 +100,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         #print(flow_stat_reply)
         #แก้ eth_type 2054 (ARP)
         print("\nSwitch :", ev.msg.datapath.id, "\n")
-        print(self.hosts, "\n")
+        print(self.host_faucet, "\n")
         for i in flow_stat_reply['OFPFlowStatsReply']['body']:
             if i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'] != []:
                 
