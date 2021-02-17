@@ -133,7 +133,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                             sum_bytes[eth_dst] += byte_count
         
         print(self.host_faucet)
-        for i in [k for k, v in self.host_faucet.items() if v[0] == ev.msg.datapath.id]:
+        print(self.hosts)
+        for i in [k for k, v in self.hosts.items() if v[0] == ev.msg.datapath.id]:
             tmp = "HOST-{0}".format(i)
             self.flow_stat_links[tmp].append([sum_bytes[i], time.time()])
             if len(self.flow_stat_links[tmp]) == 3:
