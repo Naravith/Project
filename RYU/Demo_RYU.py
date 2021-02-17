@@ -127,12 +127,12 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 if eth_type not in [2054, 35020]:
                     for host_port in self.host_faucet[ev.msg.datapath.id]:
                         if out_port == host_port:
-                            print("in_port : {0}\nout_port : {1}\neth_dst : {2}\nbyte : {3}\npkt : {4}\neth_type : {5}\n".format(in_port, out_port, eth_dst, byte_count, pkt_count, eth_type))
-                            print("*" * 50)
+                            #print("in_port : {0}\nout_port : {1}\neth_dst : {2}\nbyte : {3}\npkt : {4}\neth_type : {5}\n".format(in_port, out_port, eth_dst, byte_count, pkt_count, eth_type))
+                            #print("*" * 50)
                             sum_bytes[eth_dst] += byte_count
         
         for i in [k for k, v in self.hosts.items() if v[0] == ev.msg.datapath.id]:
-            print("\nLoop Bot : {0}\n{1}\n".format(i, [k for k, v in self.hosts.items() if v[0] == ev.msg.datapath.id]))
+            #print("\nLoop Bot : {0}\n{1}\n".format(i, [k for k, v in self.hosts.items() if v[0] == ev.msg.datapath.id]))
             tmp = "HOST-{0}".format(i)
             self.flow_stat_links[tmp].append([sum_bytes[i], time.time()])
             while len(self.flow_stat_links[tmp]) >= 3:
@@ -143,9 +143,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if (i not in self.flow_timestamp) or (len(self.flow_timestamp[i]) == 0):
                         self.flow_timestamp[i].append(self.flow_stat_links[tmp][0].copy())
                 else:
+                    '''
                     print("\n\n+++ Not Diff Much +++\n")
                     print("\n\n+++ Not Diff Much +++\n")
-                    print("\n\n+++ Not Diff Much +++\n")
+                    print("\n\n+++ Not Diff Much +++\n")'''
                     throughput = -1
                     if (i in self.flow_timestamp) and (len(self.flow_timestamp[i]) == 1):
                         start_byte = self.flow_timestamp[i][0][0]
@@ -156,7 +157,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         throughput = ((cur_byte - start_byte) / (cur_time - start_time)) * 8
 
                     if throughput != -1:
-                        print("Host {0}\nThroughput : Mbits / sec{1}".format(i, throughput))
+                        print("Host {0}\nThroughput : {1} Mbits / sec".format(i, throughput))
                         
 
         print("FlowStat\n\n {0} \n\n".format(self.flow_stat_links))
