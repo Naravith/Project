@@ -129,21 +129,21 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         if out_port == host_port:
                             print("in_port : {0}\nout_port : {1}\neth_dst : {2}\nbyte : {3}\npkt : {4}\neth_type : {5}\n".format(in_port, out_port, eth_dst, byte_count, pkt_count, eth_type))
                             print("*" * 50)
-                            print(eth_dst, type(eth_dst))
                             sum_bytes[eth_dst] += byte_count
         
-        print(self.host_faucet)
-        print(self.hosts)
         for i in [k for k, v in self.hosts.items() if v[0] == ev.msg.datapath.id]:
             tmp = "HOST-{0}".format(i)
             self.flow_stat_links[tmp].append([sum_bytes[i], time.time()])
             if len(self.flow_stat_links[tmp]) == 3:
                 self.flow_stat_links.pop(0)
+            
             if len(self.flow_stat_links[tmp]) == 2:
                 if (self.flow_stat_links[tmp][1][0] - self.flow_stat_links[tmp][0][0]) > 1000:
                     if (i not in self.flow_timestamp) or (len(self.flow_timestamp[i]) == 0):
                         self.flow_timestamp[i].append(self.flow_stat_links[tmp][1].copy())
                 else:
+                    print("\n\n+++ Not Diff Much +++\n")
+                    print("\n\n+++ Not Diff Much +++\n")
                     print("\n\n+++ Not Diff Much +++\n")
                     throughput = -1
                     if (i in self.flow_timestamp) and (len(self.flow_timestamp[i]) == 1):
@@ -158,7 +158,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         print("Host {0}\nThroughput : {1}".format(i, throughput))
                         
 
-
+        print("FlowStat\n\n {0} \n\n".format(self.flow_stat_links))
+        print("FlowTime\n\n {0} \n\n".format(self.flow_timestamp))
         print("+" * 70)
 
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
