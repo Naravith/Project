@@ -132,9 +132,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                             sum_bytes[eth_dst] += byte_count
         
         for i in [k for k, v in self.hosts.items() if v[0] == ev.msg.datapath.id]:
+            print("\nLoop Bot : {0}\n{1}\n".format(i, [k for k, v in self.hosts.items() if v[0] == ev.msg.datapath.id]))
             tmp = "HOST-{0}".format(i)
             self.flow_stat_links[tmp].append([sum_bytes[i], time.time()])
-            if len(self.flow_stat_links[tmp]) == 3:
+            while len(self.flow_stat_links[tmp]) >= 3:
                 self.flow_stat_links.pop(0)
             
             if len(self.flow_stat_links[tmp]) == 2:
