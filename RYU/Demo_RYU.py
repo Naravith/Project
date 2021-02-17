@@ -97,10 +97,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         flow_stat_reply = msg.to_jsondict()
 
-        print(flow_stat_reply)
+        #print(flow_stat_reply)
         #แก้ eth_type 2054 (ARP)
         print("\nSwitch :", ev.msg.datapath.id, "\n")
-        print(self.mac_to_port, "\n")
+        print(self.hosts, "\n")
         for i in flow_stat_reply['OFPFlowStatsReply']['body']:
             if i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'] != []:
                 
@@ -122,26 +122,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 if eth_type not in [2054, 35020]:
                     print("in_port : {0}\nout_port : {1}\neth_dst : {2}\nbyte : {3}\npkt : {4}\neth_type : {5}\n".format(in_port, out_port, eth_dst, byte_count, pkt_count, eth_type))
                     #print("\n\n", i['OFPFlowStats'], "\n")
-                    print("*" * 70)
+                    print("*" * 50)
 
-        '''
-        self.logger.info('datapath         '
-                         'in-port  eth-dst           '
-                         'out-port packets  bytes')
-        self.logger.info('---------------- '
-                         '-------- ----------------- '
-                         '-------- -------- --------')
-        
-        for stat in sorted([flow for flow in body if flow.priority == 1],
-                           key=lambda flow: (flow.match['in_port'],
-                                             flow.match['eth_dst'])):
-            self.logger.info('%016x %8x %17s %8x %8d %8d',
-                             ev.msg.datapath.id,
-                             stat.match['in_port'], stat.match['eth_dst'],
-                             stat.instructions[0].actions[0].port,
-                             stat.packet_count, stat.byte_count)
         print("+" * 70)
-        '''
 
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
     def _port_stats_reply_handler(self, ev):
