@@ -101,10 +101,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         flow_stat_reply = msg.to_jsondict()
         sum_bytes = {}
 
-        for i in self.host_faucet.keys():
+        for i in self.hosts.keys():
             sum_bytes[i] = 0
-        print(self.host_faucet)
-        print(sum_bytes)
 
         print("\nSwitch :", ev.msg.datapath.id, "\n")
 
