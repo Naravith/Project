@@ -65,18 +65,19 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         '''
 #self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
     def _TrafficMonitor(self):
-        while True:
-            for datapath in self.datapath_for_del:
-                self._FlowStatReq(datapath)
-                for link in self.link_for_DL:
-                    if datapath.id == link[0]:
-                        self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
-            '''
-            if (time.time() - self.queue_for_re_routing[1]) > 10.0 and self.queue_for_re_routing[0] != []:
-                self._re_routing(self.queue_for_re_routing[0])
-                self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
-            '''
-            hub.sleep(1)
+        if (time.time() - self.time_start) > 30:
+            while True:
+                for datapath in self.datapath_for_del:
+                    self._FlowStatReq(datapath)
+                    for link in self.link_for_DL:
+                        if datapath.id == link[0]:
+                            self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
+                '''
+                if (time.time() - self.queue_for_re_routing[1]) > 10.0 and self.queue_for_re_routing[0] != []:
+                    self._re_routing(self.queue_for_re_routing[0])
+                    self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
+                '''
+                hub.sleep(1)
 
     def _PortStatReq(self, datapath, port_no):
         #ofproto = datapath.ofproto
@@ -129,7 +130,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                             sum_bytes[eth_dst] += byte_count
                             print("in_port : {0}\nout_port : {1}\neth_dst : {2}\nbyte : {3}\npkt : {4}\neth_type : {5}\n".format(in_port, out_port, eth_dst, byte_count, pkt_count, eth_type))
                             print("*" * 50)
-                    
+        
+        print(self.host_faucet)
         for i in [k for k, v in self.host_faucet.items() if v[0] == ev.msg.datapath.id]:
             tmp = "HOST-{0}".format(i)
             self.flow_stat_links[tmp].append([sum_bytes[i], time.time()])
