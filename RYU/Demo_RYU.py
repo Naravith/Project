@@ -65,19 +65,21 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         '''
 #self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
     def _TrafficMonitor(self):
-        if (time.time() - self.time_start) > 30:
-            while True:
-                for datapath in self.datapath_for_del:
+        while True:
+            for datapath in self.datapath_for_del:
+                print(time.time() - self.time_start)
+                if (time.time() - self.time_start) > 30:
+                    print("+++ Send Flow Stat Msg +++")
                     self._FlowStatReq(datapath)
-                    for link in self.link_for_DL:
-                        if datapath.id == link[0]:
-                            self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
-                '''
-                if (time.time() - self.queue_for_re_routing[1]) > 10.0 and self.queue_for_re_routing[0] != []:
-                    self._re_routing(self.queue_for_re_routing[0])
-                    self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
-                '''
-                hub.sleep(1)
+                for link in self.link_for_DL:
+                    if datapath.id == link[0]:
+                        self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
+            '''
+            if (time.time() - self.queue_for_re_routing[1]) > 10.0 and self.queue_for_re_routing[0] != []:
+                self._re_routing(self.queue_for_re_routing[0])
+                self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
+            '''
+            hub.sleep(1)
 
     def _PortStatReq(self, datapath, port_no):
         #ofproto = datapath.ofproto
