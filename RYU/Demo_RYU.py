@@ -141,7 +141,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             if len(self.flow_stat_links[tmp]) == 2:
                 if (self.flow_stat_links[tmp][1][0] - self.flow_stat_links[tmp][0][0]) > 1000:
                     if (i not in self.flow_timestamp) or (len(self.flow_timestamp[i]) == 0):
-                        self.flow_timestamp[i].append(self.flow_stat_links[tmp][1].copy())
+                        self.flow_timestamp[i].append(self.flow_stat_links[tmp][0].copy())
                 else:
                     print("\n\n+++ Not Diff Much +++\n")
                     print("\n\n+++ Not Diff Much +++\n")
@@ -153,10 +153,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         cur_byte = self.flow_stat_links[tmp][0][0]
                         cur_time = self.flow_stat_links[tmp][0][1]
                         self.flow_timestamp[i].pop(0)
-                        throughput = (cur_byte - start_byte) / (cur_time - start_time)
+                        throughput = ((cur_byte - start_byte) / (cur_time - start_time)) * 8
 
                     if throughput != -1:
-                        print("Host {0}\nThroughput : {1}".format(i, throughput))
+                        print("Host {0}\nThroughput : Mbits / sec{1}".format(i, throughput))
                         
 
         print("FlowStat\n\n {0} \n\n".format(self.flow_stat_links))
