@@ -164,6 +164,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
                     if throughput != -1:
                         print("Host {0}\nThroughput : {1} Mbits / sec\nX-axis : {2} Pkt / sec".format(i, throughput, pktpersec))
+                        filename = "Host_{0}".format(i)
+                        if not os.path.isfile(filename):
+                            self._append_list_as_row(filename, ['Throughput', 'Pkt/sec'])
+                        self._append_list_as_row(filename, [throughput, pktpersec])
                         
 
         print("FlowStat\n\n {0} \n\n".format(self.flow_stat_links))
