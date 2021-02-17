@@ -136,7 +136,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             tmp = "HOST-{0}".format(i)
             self.flow_stat_links[tmp].append([sum_bytes[i], time.time()])
             while len(self.flow_stat_links[tmp]) >= 3:
-                self.flow_stat_links.pop(0)
+                self.flow_stat_links[tmp].pop(0)
             
             if len(self.flow_stat_links[tmp]) == 2:
                 if (self.flow_stat_links[tmp][1][0] - self.flow_stat_links[tmp][0][0]) > 1000:
