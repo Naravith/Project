@@ -67,7 +67,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def _TrafficMonitor(self):
         while True:
             for datapath in self.datapath_for_del:
-                if (time.time() - self.time_start) > 20:
+                if (time.time() - self.time_start) > 15:
                     self._FlowStatReq(datapath)
                 for link in self.link_for_DL:
                     if datapath.id == link[0]:
@@ -103,7 +103,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         for i in self.host_faucet.keys():
             sum_bytes[i] = 0
-
+        print(self.host_faucet)
         print(sum_bytes)
 
         print("\nSwitch :", ev.msg.datapath.id, "\n")
