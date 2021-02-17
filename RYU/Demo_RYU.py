@@ -42,6 +42,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.port_stat_links = defaultdict(list)
         self.csv_filename = {}
         self.queue_for_re_routing = [[], time.time()]
+        self.flow_stat_links = defaultdict(list)
+        self.flow_timestamp = defaultdict(list)
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -74,7 +76,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 self._re_routing(self.queue_for_re_routing[0])
                 self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
             '''
-            hub.sleep(2)
+            hub.sleep(1)
 
     def _PortStatReq(self, datapath, port_no):
         #ofproto = datapath.ofproto
@@ -92,15 +94,17 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
     def _flow_stats_reply_handler(self, ev):
-        body = ev.msg.body
+        #body = ev.msg.body
         msg = ev.msg
 
         flow_stat_reply = msg.to_jsondict()
+        sum_bytes = {}
 
-        #print(flow_stat_reply)
-        #แก้ eth_type 2054 (ARP)
+        for i in self.host_faucet.keys():
+            sum_bytes[i] = 0
+
         print("\nSwitch :", ev.msg.datapath.id, "\n")
-        print(self.host_faucet, "\n")
+
         for i in flow_stat_reply['OFPFlowStatsReply']['body']:
             if i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'] != []:
                 
@@ -118,13 +122,38 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         eth_dst = j['OXMTlv']['value']
                     elif j['OXMTlv']['field'] == 'eth_type':
                         eth_type = j['OXMTlv']['value']
-
+                
                 if eth_type not in [2054, 35020]:
                     for host_port in self.host_faucet[ev.msg.datapath.id]:
                         if out_port == host_port:
+                            sum_bytes[eth_dst] += byte_count
                             print("in_port : {0}\nout_port : {1}\neth_dst : {2}\nbyte : {3}\npkt : {4}\neth_type : {5}\n".format(in_port, out_port, eth_dst, byte_count, pkt_count, eth_type))
-                            #print("\n\n", i['OFPFlowStats'], "\n")
                             print("*" * 50)
+                    
+        for i in [k for k, v in self.host_faucet.items() if v[0] == ev.msg.datapath.id]:
+            tmp = "HOST-{0}".format(i)
+            self.flow_stat_links[tmp].append([sum_bytes[i], time.time()])
+            if len(self.flow_stat_links[tmp]) == 3:
+                self.flow_stat_links.pop(0)
+            if len(self.flow_stat_links[tmp]) == 2:
+                if (self.flow_stat_links[tmp][1][0] - self.flow_stat_links[tmp][0][0]) > 1000:
+                    if (i not in self.flow_timestamp) or (len(self.flow_timestamp[i]) == 0):
+                        self.flow_timestamp[i].append(self.flow_stat_links[tmp][1].copy())
+                else:
+                    print("\n\n+++ Not Diff Much +++\n")
+                    throughput = -1
+                    if (i in self.flow_timestamp) and (len(self.flow_timestamp[i]) == 1):
+                        start_byte = self.flow_timestamp[i][0][0]
+                        start_time = self.flow_timestamp[i][0][1]
+                        cur_byte = self.flow_stat_links[tmp][0][0]
+                        cur_time = self.flow_stat_links[tmp][0][1]
+                        self.flow_timestamp[i].pop(0)
+                        throughput = (cur_byte - start_byte) / (cur_time - start_time)
+
+                    if throughput != -1:
+                        print("Host {0}\nThroughput : {1}".format(i, throughput))
+                        
+
 
         print("+" * 70)
 
