@@ -100,9 +100,11 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         flow_stat_reply = msg.to_jsondict()
         sum_bytes = {}
+        sum_pkts = {}
 
         for i in self.hosts.keys():
             sum_bytes[i] = 0
+            sum_pkts[i] = 0
 
         print("\nSwitch :", ev.msg.datapath.id, "\n")
 
@@ -130,11 +132,12 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                             #print("in_port : {0}\nout_port : {1}\neth_dst : {2}\nbyte : {3}\npkt : {4}\neth_type : {5}\n".format(in_port, out_port, eth_dst, byte_count, pkt_count, eth_type))
                             #print("*" * 50)
                             sum_bytes[eth_dst] += byte_count
+                            sum_pkts[eth_dst] += pkt_count
         
         for i in [k for k, v in self.hosts.items() if v[0] == ev.msg.datapath.id]:
             #print("\nLoop Bot : {0}\n{1}\n".format(i, [k for k, v in self.hosts.items() if v[0] == ev.msg.datapath.id]))
             tmp = "HOST-{0}".format(i)
-            self.flow_stat_links[tmp].append([sum_bytes[i], time.time()])
+            self.flow_stat_links[tmp].append([sum_bytes[i], sum_pkts[i], time.time()])
             while len(self.flow_stat_links[tmp]) >= 3:
                 self.flow_stat_links[tmp].pop(0)
             
@@ -150,14 +153,17 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     throughput = -1
                     if (i in self.flow_timestamp) and (len(self.flow_timestamp[i]) == 1):
                         start_byte = self.flow_timestamp[i][0][0]
-                        start_time = self.flow_timestamp[i][0][1]
+                        start_pkt = self.flow_timestamp[i][0][1]
+                        start_time = self.flow_timestamp[i][0][2]
                         cur_byte = self.flow_stat_links[tmp][0][0]
-                        cur_time = self.flow_stat_links[tmp][0][1]
+                        cur_pkt = self.flow_stat_links[tmp][0][1]
+                        cur_time = self.flow_stat_links[tmp][0][2]
                         self.flow_timestamp[i].pop(0)
                         throughput = ((cur_byte - start_byte) / (cur_time - start_time)) * 8
+                        pktpersec = (cur_pkt - start_pkt) / (cur_time - start_time)
 
                     if throughput != -1:
-                        print("Host {0}\nThroughput : {1} Mbits / sec".format(i, throughput))
+                        print("Host {0}\nThroughput : {1} Mbits / sec\nX-axis : {2} Pkt / sec".format(i, throughput, pktpersec))
                         
 
         print("FlowStat\n\n {0} \n\n".format(self.flow_stat_links))
