@@ -17,11 +17,11 @@ import csv
 import os
 import inspect
 import random
-
+'''
 from tensorflow.keras.models import load_model
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
-
+'''
 class SelfLearningBYLuxuss(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 
