@@ -48,7 +48,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.queue_for_re_routing = [[], time.time()]
         self.flow_stat_links = defaultdict(list)
         self.flow_timestamp = defaultdict(list)
-        self.model = load_model('my_lstm_model.h5')
+        #self.model = load_model('my_lstm_model.h5')
 
     def _PredictBW(self):
         pass
