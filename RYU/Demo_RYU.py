@@ -18,6 +18,10 @@ import os
 import inspect
 import random
 
+from tensorflow.keras.models import load_model
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
+
 class SelfLearningBYLuxuss(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 
@@ -44,6 +48,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.queue_for_re_routing = [[], time.time()]
         self.flow_stat_links = defaultdict(list)
         self.flow_timestamp = defaultdict(list)
+        self.model = load_model('my_lstm_model.h5')
+
+    def _PredictBW(self):
+        pass
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -66,6 +74,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 #self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
     def _TrafficMonitor(self):
         while True:
+            print("csv file name :\n{0}".format(self.csv_filename))
+            print("+" * 70)
             for datapath in self.datapath_for_del:
                 if (time.time() - self.time_start) > 15:
                     self._FlowStatReq(datapath)
@@ -106,7 +116,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             sum_bytes[i] = 0
             sum_pkts[i] = 0
 
-        print("\nSwitch :", ev.msg.datapath.id, "\n")
+        #print("\nSwitch :", ev.msg.datapath.id, "\n")
 
         for i in flow_stat_reply['OFPFlowStatsReply']['body']:
             if i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'] != []:
@@ -163,16 +173,17 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         pktpersec = (cur_pkt - start_pkt) / (cur_time - start_time)
 
                     if throughput != -1:
-                        print("Host {0}\nThroughput : {1} Mbits / sec\nX-axis : {2} Pkt / sec".format(i, throughput, pktpersec))
+                        #print("Host {0}\nThroughput : {1} Mbits / sec\nX-axis : {2} Pkt / sec".format(i, throughput, pktpersec))
                         filename = "Host_{0}.csv".format(i)
                         if not os.path.isfile(filename):
                             self._append_list_as_row(filename, ['Throughput', 'Pkt/sec'])
                         self._append_list_as_row(filename, [throughput, pktpersec])
                         
-
+        '''
         print("FlowStat\n\n {0} \n\n".format(self.flow_stat_links))
         print("FlowTime\n\n {0} \n\n".format(self.flow_timestamp))
         print("+" * 70)
+        '''
 
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
     def _port_stats_reply_handler(self, ev):
