@@ -49,7 +49,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.flow_stat_links = defaultdict(list)
         self.flow_timestamp = defaultdict(list)
         self.data_for_train = defaultdict(list)
-        #self.model = load_model('my_lstm_model.h5')
+        #self.model = load_model('/home/sdn/Desktop/Project/RYU/my_lstm_model.h5')
     '''
     def create_dataset(self, dataset, time_step=1):
         dataX, dataY = [], []
@@ -94,8 +94,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 #self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
     def _TrafficMonitor(self):
         while True:
+            '''
             print("link_for_DL :\n{0}".format(self.link_for_DL))
             print("+" * 70)
+            '''
             for datapath in self.datapath_for_del:
                 if (time.time() - self.time_start) > 15:
                     self._FlowStatReq(datapath)
