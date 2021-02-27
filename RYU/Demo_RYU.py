@@ -62,6 +62,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def _PredictBW(self):
         ban = []
         for i in self.data_for_train:
+            if i == 1:
+                print(len(self.data_for_train[i]))
+                print(self.data_for_train[i])
+                print("+" * 70)
             while len(self.data_for_train[i]) > 1000:
                 self.data_for_train[i].pop(0)
             # prevent append from port_stat in msec
@@ -72,6 +76,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 result_af_pred = self.model.predict(dataset)
                 if np.max(result_af_pred) > 0.8 and np.mean(result_af_pred) > 0.75:
                     ban.append(self.link_for_DL[i - 1])
+                    
         self._re_routing(ban)
     
 
@@ -100,6 +105,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             print("link_for_DL :\n{0}".format(self.link_for_DL))
             print("+" * 70)
             '''
+            self._PredictBW()
             for datapath in self.datapath_for_del:
                 if (time.time() - self.time_start) > 15:
                     self._FlowStatReq(datapath)
