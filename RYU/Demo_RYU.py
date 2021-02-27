@@ -17,11 +17,11 @@ import csv
 import os
 import inspect
 import random
-'''
+
 from tensorflow.keras.models import load_model
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
-'''
+
 class SelfLearningBYLuxuss(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 
@@ -49,8 +49,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.flow_stat_links = defaultdict(list)
         self.flow_timestamp = defaultdict(list)
         self.data_for_train = defaultdict(list)
-        #self.model = load_model('/home/sdn/Desktop/Project/RYU/my_lstm_model.h5')
-    '''
+        self.model = load_model('/home/sdn/Desktop/Project/RYU/my_lstm_model.h5')
+    
     def create_dataset(self, dataset, time_step=1):
         dataX, dataY = [], []
         for i in range(len(dataset) - time_step-1):
@@ -64,14 +64,16 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         for i in self.data_for_train:
             while len(self.data_for_train[i]) > 1000:
                 self.data_for_train[i].pop(0)
-            scaler = MinMaxScaler(feature_range=(0,1))
-            zero_2_one_scale = scaler.fit_transform(np.array(self.data_for_train[i]).reshape(-1,1))
-            dataset = self.create_dataset(zero_2_one_scale, time_step=200)
-            result_af_pred = self.model.predict(dataset)
-            if np.max(result_af_pred) > 0.8 and np.mean(result_af_pred) > 0.75:
-                ban.append(self.link_for_DL[i - 1])
+            # prevent append from port_stat in msec
+            if len(self.data_for_train[i]) >= 1000:
+                scaler = MinMaxScaler(feature_range=(0,1))
+                zero_2_one_scale = scaler.fit_transform(np.array(self.data_for_train[i]).reshape(-1,1))
+                dataset = self.create_dataset(zero_2_one_scale, time_step=200)
+                result_af_pred = self.model.predict(dataset)
+                if np.max(result_af_pred) > 0.8 and np.mean(result_af_pred) > 0.75:
+                    ban.append(self.link_for_DL[i - 1])
         self._re_routing(ban)
-    '''
+    
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
