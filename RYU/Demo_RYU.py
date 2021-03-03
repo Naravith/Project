@@ -473,9 +473,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 '''
             self.best_path.setdefault(path, {})
             self.best_path[path] = tmp
-        
+        print("rerouting_effect :\n", rerouting_effect)
         for switch in rerouting_effect:
-            if rerouting_effect[i] != {}:
+            if rerouting_effect[switch] != {}:
                 old_path, cnt = len(rerouting_effect[switch]) // 2 + \
                     (len(rerouting_effect[switch]) % 2), 0
                 for link in rerouting_effect[switch]:
