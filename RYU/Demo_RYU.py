@@ -16,11 +16,12 @@ import time
 import csv
 import os
 import inspect
-import random
-
+from random import randint
+'''
 from tensorflow.keras.models import load_model
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
+'''
 
 class SelfLearningBYLuxuss(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
@@ -49,8 +50,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.flow_stat_links = defaultdict(list)
         self.flow_timestamp = defaultdict(list)
         self.data_for_train = defaultdict(list)
-        self.model = load_model('/home/sdn/Desktop/Project/RYU/my_lstm_model.h5')
-    
+        #self.model = load_model('/home/sdn/Desktop/Project/RYU/my_lstm_model.h5')
+    '''
     def create_dataset(self, dataset, time_step=1):
         dataX, dataY = [], []
         for i in range(len(dataset) - time_step-1):
@@ -58,7 +59,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             dataX.append(a)
             dataY.append(dataset[i + time_step + 1, :])
         return np.array(dataX), np.array(dataY)
-
+    
     def _PredictBW(self):
         ban = []
         for i in self.data_for_train:
@@ -78,7 +79,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     ban.append(self.link_for_DL[i - 1])
                     
         self._re_routing(ban)
-    
+    '''
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -98,25 +99,25 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             print("Switch {0} -> {1}".format(i, self.datapath_list[i].__dict__))
         print("-" * 40)
         '''
-#self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
+#self._re_routing(self.link_for_DL[randint(0, len(self.link_for_DL) - 1)])
     def _TrafficMonitor(self):
         while True:
             '''
             print("link_for_DL :\n{0}".format(self.link_for_DL))
             print("+" * 70)
             '''
-            self._PredictBW()
+            #self._PredictBW()
             for datapath in self.datapath_for_del:
                 if (time.time() - self.time_start) > 15:
                     self._FlowStatReq(datapath)
                 for link in self.link_for_DL:
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
-            '''
-            if (time.time() - self.queue_for_re_routing[1]) > 10.0 and self.queue_for_re_routing[0] != []:
+            
+            if (time.time() - self.queue_for_re_routing[1]) > 30.0 and self.queue_for_re_routing[0] != []:
                 self._re_routing(self.queue_for_re_routing[0])
                 self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
-            '''
+            
             hub.sleep(1)
 
     def _PortStatReq(self, datapath, port_no):
@@ -249,8 +250,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], \
                         self.port_stat_links[tmp][0][1], dropped, bw_util * 13107200]
 
-                    if bw_util > 0.7 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
-                        self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
+                    if bw_util > 0.75 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
+                        if randint(1, 15) > 6:
+                            self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
                     if bw_util < 1e-03:
                         check_more_than_zero = False
 
@@ -262,8 +264,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0], \
                         self.port_stat_links[tmp][1][1] - self.port_stat_links[tmp][0][1], dropped, bw_util * 13107200]
 
-                    if bw_util > 0.7 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
-                        self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
+                    if bw_util > 0.75 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
+                        if randint(1, 15) > 6:
+                            self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
                     if bw_util < 1e-03:
                         check_more_than_zero = False
 
