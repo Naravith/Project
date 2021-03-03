@@ -114,9 +114,13 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
             
-            if (time.time() - self.queue_for_re_routing[1]) > 30.0 and self.queue_for_re_routing[0] != []:
-                self._re_routing(self.queue_for_re_routing[0])
-                self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
+            if (time.time() - self.queue_for_re_routing[1]) > 30.0:
+                if self.queue_for_re_routing[0] != []:
+                    self._re_routing(self.queue_for_re_routing[0])
+                    self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
+            else:
+                self.queue_for_re_routing[0] = []
+            
             
             hub.sleep(1)
 
