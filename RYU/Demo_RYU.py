@@ -281,7 +281,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if number not in self.data_for_train:
                         self.data_for_train[number] = []
                     self.data_for_train[number].append([row_contents[-1]])
-        '''
+        
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
         if len(self.port_stat_links[tmp]) == 1:
@@ -298,7 +298,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                             (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200 * 100))
         #print(self.port_stat_links)
         print("+" * 50)
-        '''
+        
 
 
         if len(self.port_stat_links[tmp]) == 2:
