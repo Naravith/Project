@@ -254,9 +254,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], \
                         self.port_stat_links[tmp][0][1], dropped, bw_util * 1310720]
 
-                    if bw_util > 0.6 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
-                        if randint(1, 15) > 6:
-                            self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
+                    if bw_util + (randint(4, 10) / 100) > 0.75 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
+                        self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
                     if bw_util < 1e-03:
                         check_more_than_zero = False
 
@@ -268,9 +267,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0], \
                         self.port_stat_links[tmp][1][1] - self.port_stat_links[tmp][0][1], dropped, bw_util * 1310720]
 
-                    if bw_util > 0.6 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
-                        if randint(1, 15) > 6:
-                            self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
+                    if bw_util + (randint(4, 10) / 100) > 0.75 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
+                        self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
                     if bw_util < 1e-03:
                         check_more_than_zero = False
 
