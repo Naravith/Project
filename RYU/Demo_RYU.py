@@ -519,8 +519,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         print('#' * 50)
         for i in self.print_bw_util:
             print("Link between switch {0} - switch {1}".format(i[0], i[1]))
-            print("\tDetected  Bandwidth Util : {0} %".format(i[2]))
-            print("\tPredicted Bandwidth Util : {0} %\n".format(i[3]))
+            print("\tDetected  Bandwidth Utilization : {0} %".format(i[2]))
+            print("\tPredicted Bandwidth Utilization : {0} %\n".format(i[3]))
         print('#' * 50)
         
 
