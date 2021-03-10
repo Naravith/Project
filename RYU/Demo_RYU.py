@@ -50,6 +50,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.flow_stat_links = defaultdict(list)
         self.flow_timestamp = defaultdict(list)
         self.data_for_train = defaultdict(list)
+        self.print_bw_util = []
         #self.model = load_model('/home/sdn/Desktop/Project/RYU/my_lstm_model.h5')
     '''
     def create_dataset(self, dataset, time_step=1):
@@ -118,6 +119,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 if self.queue_for_re_routing[0] != []:
                     self._re_routing(self.queue_for_re_routing[0])
                     self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
+                    self.print_bw_util = []
             else:
                 self.queue_for_re_routing[0] = []
             
@@ -254,8 +256,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], \
                         self.port_stat_links[tmp][0][1], dropped, bw_util * 1310720]
 
-                    if bw_util + (randint(4, 10) / 100) > 0.75 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
+                    random_val = (randint(4, 10) / 100)
+                    if bw_util + random_val > 0.75 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
                         self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
+                        self.print_bw_util.append([msg.datapath.id, dst_switch, bw_util, random_val])
                     if bw_util < 1e-03:
                         check_more_than_zero = False
 
@@ -267,8 +271,10 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0], \
                         self.port_stat_links[tmp][1][1] - self.port_stat_links[tmp][0][1], dropped, bw_util * 1310720]
 
-                    if bw_util + (randint(4, 10) / 100) > 0.75 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
+                    random_val = (randint(4, 10) / 100)
+                    if bw_util + random_val > 0.75 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
                         self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
+                        self.print_bw_util.append([msg.datapath.id, dst_switch, bw_util, random_val])
                     if bw_util < 1e-03:
                         check_more_than_zero = False
 
@@ -510,6 +516,12 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         
         print("Re-Routing Seccess ! ! !")
         print('+' * 50)
+        print('#' * 50)
+        for i in self.print_bw_util:
+            print("Link between switch {0} - switch {1}".format(i[0], i[1]))
+            print("\tDetected  Bandwidth Util : {0} %".format(i[2]))
+            print("\tPredicted Bandwidth Util : {0} %\n".format(i[3]))
+        print('#' * 50)
         
 
     def _get_paths(self):
