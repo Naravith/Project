@@ -258,7 +258,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self.port_stat_links[tmp][0][1], dropped, bw_util * 1310720]
 
                     random_val = (randint(4, 10) / 100)
-                    if bw_util + random_val > 0.5 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
+                    if bw_util + random_val > 0.75 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
                         self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
                         self.print_bw_util.append([msg.datapath.id, dst_switch, bw_util, bw_util + random_val])
                     if bw_util < 1e-03:
@@ -273,7 +273,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self.port_stat_links[tmp][1][1] - self.port_stat_links[tmp][0][1], dropped, bw_util * 1310720]
 
                     random_val = (randint(4, 10) / 100)
-                    if bw_util + random_val > 0.5 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
+                    if bw_util + random_val > 0.75 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
                         self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
                         self.print_bw_util.append([msg.datapath.id, dst_switch, bw_util, bw_util + random_val])
                     if bw_util < 1e-03:
