@@ -124,7 +124,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 self.queue_for_re_routing[0] = []
             
             
-            hub.sleep(1)
+            hub.sleep(2)
 
     def _PortStatReq(self, datapath, port_no):
         #ofproto = datapath.ofproto
@@ -260,9 +260,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if bw_util + random_val > 0.65 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
                         self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
                         self.print_bw_util.append([msg.datapath.id, dst_switch, bw_util, random_val])
-                        print("IF : {0}".format(self.queue_for_re_routing[0]))
-                    else:
-                        print("ELSE : {0} | {1}".format(bw_util, random_val))
                     if bw_util < 1e-03:
                         check_more_than_zero = False
 
@@ -278,9 +275,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if bw_util + random_val > 0.65 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
                         self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
                         self.print_bw_util.append([msg.datapath.id, dst_switch, bw_util, random_val])
-                        print("IF : {0}".format(self.queue_for_re_routing[0]))
-                    else:
-                        print("ELSE : {0} | {1}".format(bw_util, random_val))
                     if bw_util < 1e-03:
                         check_more_than_zero = False
 
@@ -291,7 +285,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if number not in self.data_for_train:
                         self.data_for_train[number] = []
                     self.data_for_train[number].append([row_contents[-1]])
-        '''
+        
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
         if len(self.port_stat_links[tmp]) == 1:
@@ -308,7 +302,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                             (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 1310720 * 100))
         #print(self.port_stat_links)
         print("+" * 50)
-        '''
+        
 
 
         if len(self.port_stat_links[tmp]) == 2:
