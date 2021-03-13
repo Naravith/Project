@@ -257,8 +257,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][0][0], \
                         self.port_stat_links[tmp][0][1], dropped, bw_util * 1310720]
 
-                    random_val = (randint(1, 7) / 100)
-                    if bw_util + random_val > 0.7 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
+                    random_val = (randint(3, 9) / 100)
+                    if bw_util + random_val > 0.65 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
                         self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
                         self.print_bw_util.append([msg.datapath.id, dst_switch, bw_util, bw_util + random_val])
                     if bw_util < 1e-03:
@@ -272,8 +272,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     row_contents = [time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0], \
                         self.port_stat_links[tmp][1][1] - self.port_stat_links[tmp][0][1], dropped, bw_util * 1310720]
 
-                    random_val = (randint(1, 7) / 100)
-                    if bw_util + random_val > 0.7 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
+                    random_val = (randint(3, 9) / 100)
+                    if bw_util + random_val > 0.65 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
                         self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
                         self.print_bw_util.append([msg.datapath.id, dst_switch, bw_util, bw_util + random_val])
                     if bw_util < 1e-03:
@@ -288,17 +288,18 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     self.data_for_train[number].append([row_contents[-1]])
         
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
-        print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
+        #print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
         if len(self.port_stat_links[tmp]) == 1:
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
-            print("Link_Dropped : {0} packets".format(self.port_stat_links[tmp][0][4] + self.port_stat_links[tmp][0][5]))
+            #print("Link_Dropped : {0} packets".format(self.port_stat_links[tmp][0][4] + self.port_stat_links[tmp][0][5]))
             print("BW Utilization (10 Mbps) : {0} %".format((self.port_stat_links[tmp][0][2] + \
                 self.port_stat_links[tmp][0][3]) / 1310720 * 100))
         elif len(self.port_stat_links[tmp]) == 2:
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0]\
                 , self.port_stat_links[tmp][1][1]- self.port_stat_links[tmp][0][1]))
+            '''
             print("Link_Dropped : {0} packets".format((self.port_stat_links[tmp][1][4] - self.port_stat_links[tmp][0][4]) + \
-                        (self.port_stat_links[tmp][1][5] - self.port_stat_links[tmp][0][5])))
+                        (self.port_stat_links[tmp][1][5] - self.port_stat_links[tmp][0][5])))'''
             print("BW Utilization (10 Mbps) : {0} %".format(((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
                             (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 1310720 * 100))
         #print(self.port_stat_links)
