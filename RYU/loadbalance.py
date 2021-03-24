@@ -24,9 +24,9 @@ import random
 import time
 
 # Cisco Reference bandwidth = 10 Mbps
-REFERENCE_BW = 100000
+REFERENCE_BW = 10000000
 
-DEFAULT_BW = 100000
+DEFAULT_BW = 10000000
 
 MAX_PATHS = 2
 
