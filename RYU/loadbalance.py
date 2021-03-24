@@ -258,6 +258,7 @@ class ProjectController(app_manager.RyuApp):
         pkt = packet.Packet(msg.data)
         eth = pkt.get_protocol(ethernet.ethernet)
         arp_pkt = pkt.get_protocol(arp.arp)
+        ip_pkt = pkt.get_protocol(ipv4.ipv4)
 
         # avoid broadcast from LLDP
         if eth.ethertype == 35020:
@@ -279,24 +280,50 @@ class ProjectController(app_manager.RyuApp):
         out_port = ofproto.OFPP_FLOOD
 
         if arp_pkt:
-            # print dpid, pkt
             src_ip = arp_pkt.src_ip
             dst_ip = arp_pkt.dst_ip
+            self.arp_table[src_ip] = src
             if arp_pkt.opcode == arp.ARP_REPLY:
-                self.arp_table[src_ip] = src
+                #self.arp_table[src_ip] = src
+                if self._mac_learning(dpid, src, in_port):
+                    self._arp_forwarding(msg, src_ip, dst_ip, eth)
+
                 h1 = self.hosts[src]
                 h2 = self.hosts[dst]
                 out_port = self.install_paths(h1[0], h1[1], h2[0], h2[1], src_ip, dst_ip)
                 self.install_paths(h2[0], h2[1], h1[0], h1[1], dst_ip, src_ip) # reverse
+                
             elif arp_pkt.opcode == arp.ARP_REQUEST:
                 if dst_ip in self.arp_table:
-                    self.arp_table[src_ip] = src
+                    #self.arp_table[src_ip] = src
+                    if self._mac_learning(dpid, src, in_port):
+                        self._arp_forwarding(msg, src_ip, dst_ip, eth)
+                        
                     dst_mac = self.arp_table[dst_ip]
                     h1 = self.hosts[src]
                     h2 = self.hosts[dst_mac]
                     out_port = self.install_paths(h1[0], h1[1], h2[0], h2[1], src_ip, dst_ip)
                     self.install_paths(h2[0], h2[1], h1[0], h1[1], dst_ip, src_ip) # reverse
 
+                else:
+                    if self._mac_learning(dpid, src, in_port):
+                        self._arp_forwarding(msg, src_ip, dst_ip, eth)
+
+        if ip_pkt:
+            mac_to_port_table = self.mac_to_port.get(dpid)
+            if mac_to_port_table:
+                if eth.dst in mac_to_port_table:
+                    out_port = mac_to_port_table[dst]
+                    actions = [parser.OFPActionOutput(out_port)]
+                    match = parser.OFPMatch(in_port=in_port, eth_dst=dst)
+                    self._add_flow(datapath, 1, match, actions)
+                    self._send_packet_out(datapath, msg.buffer_id, in_port,
+                                         out_port, msg.data)
+                else:
+                    if self._mac_learning(dpid, src, in_port):
+                        self._flood(msg)
+
+        '''
         # print pkt
 
         actions = [parser.OFPActionOutput(out_port)]
@@ -309,6 +336,7 @@ class ProjectController(app_manager.RyuApp):
             datapath=datapath, buffer_id=msg.buffer_id, in_port=in_port,
             actions=actions, data=data)
         datapath.send_msg(out)
+        '''
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -349,3 +377,72 @@ class ProjectController(app_manager.RyuApp):
             del self.adjacency[s2.dpid][s1.dpid]
         except KeyError:
             pass
+
+    def _arp_forwarding(self, msg, src_ip, dst_ip, eth_pkt):
+        datapath = msg.datapath
+        parser = datapath.ofproto_parser
+        in_port = msg.match['in_port']
+
+        out_port = self.mac_to_port[datapath.id].get(eth_pkt.dst)
+        if out_port is not None:
+            match = parser.OFPMatch(in_port=in_port, eth_dst=eth_pkt.dst,
+                                    eth_type=eth_pkt.ethertype)
+            actions = [parser.OFPActionOutput(out_port)]
+            self._add_flow(datapath, 1, match, actions)
+            self._send_packet_out(datapath, msg.buffer_id, in_port,
+                                 out_port, msg.data)
+        else:
+            self._flood(msg)
+
+    def _mac_learning(self, dpid, src_mac, in_port):
+        self.mac_to_port.setdefault(dpid, {})
+        if src_mac in self.mac_to_port[dpid]:
+            if in_port != self.mac_to_port[dpid][src_mac]:
+                return False
+            return True
+        else:
+            self.mac_to_port[dpid][src_mac] = in_port
+            return True
+
+    def _flood(self, msg):
+        datapath = msg.datapath
+        ofproto = datapath.ofproto
+        out = self._build_packet_out(datapath, ofproto.OFP_NO_BUFFER,
+                                     ofproto.OFPP_CONTROLLER,
+                                     ofproto.OFPP_FLOOD, msg.data)
+        datapath.send_msg(out)
+        #self.logger.info("Flooding msg")
+
+    def _build_packet_out(self, datapath, buffer_id, src_port, dst_port, data):
+        actions = []
+        if dst_port:
+            actions.append(datapath.ofproto_parser.OFPActionOutput(dst_port))
+
+        msg_data = None
+        if buffer_id == datapath.ofproto.OFP_NO_BUFFER:
+            if data is None:
+                return None
+            msg_data = data
+
+        out = datapath.ofproto_parser.OFPPacketOut(
+            datapath=datapath, buffer_id=buffer_id,
+            data=msg_data, in_port=src_port, actions=actions)
+        return out
+
+    def _send_packet_out(self, datapath, buffer_id, src_port, dst_port, data):
+        out = self._build_packet_out(datapath, buffer_id,
+                                     src_port, dst_port, data)
+        #print("dpid : {0} | src : {1} | dst : {2}\nout : {3}".format(datapath.id, src_port, dst_port, out))
+        if out:
+            datapath.send_msg(out)
+
+    def _add_flow(self, datapath, priority, match, actions):
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+
+        inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS,
+                                             actions)]
+
+        mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
+                                match=match, instructions=inst)
+        datapath.send_msg(mod)
