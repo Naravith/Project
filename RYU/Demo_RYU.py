@@ -174,7 +174,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     elif j['OXMTlv']['field'] == 'eth_type':
                         eth_type = j['OXMTlv']['value']
                 
-                if eth_type not in [2054, 35020]:
+                if eth_type not in [2048, 2054, 35020]:
                     for host_port in self.host_faucet[ev.msg.datapath.id]:
                         if out_port == host_port:
                             #print("in_port : {0}\nout_port : {1}\neth_dst : {2}\nbyte : {3}\npkt : {4}\neth_type : {5}\n".format(in_port, out_port, eth_dst, byte_count, pkt_count, eth_type))
