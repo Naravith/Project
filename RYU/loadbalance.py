@@ -222,7 +222,7 @@ class ProjectController(app_manager.RyuApp):
                         self.data_for_train[number] = []
                     self.data_for_train[number].append([row_contents[-1]])
                     '''
-        '''
+        
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         if len(self.port_stat_links[tmp]) == 1:
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
@@ -234,7 +234,7 @@ class ProjectController(app_manager.RyuApp):
             print("BW Utilization (10 Mbps) : {0} %".format(((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
                             (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 1310720 * 100))
         print("+" * 50)
-        '''
+        
         
 
 
