@@ -130,6 +130,8 @@ class ProjectController(app_manager.RyuApp):
                 if eth_type not in [2054, 35020]:
                     for host_port in self.host_faucet[ev.msg.datapath.id]:
                         if out_port == host_port:
+                            print("in_port : {0}\nout_port : {1}\neth_dst : {2}\nbyte : {3}\npkt : {4}\neth_type : {5}\n".format(in_port, out_port, eth_dst, byte_count, pkt_count, eth_type))
+                            print("*" * 50)
                             sum_bytes[eth_dst] += byte_count
                             sum_pkts[eth_dst] += pkt_count
         
@@ -217,7 +219,7 @@ class ProjectController(app_manager.RyuApp):
                         self.data_for_train[number] = []
                     self.data_for_train[number].append([row_contents[-1]])
                     '''
-        
+        '''
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         if len(self.port_stat_links[tmp]) == 1:
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
@@ -229,6 +231,7 @@ class ProjectController(app_manager.RyuApp):
             print("BW Utilization (10 Mbps) : {0} %".format(((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
                             (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 1310720 * 100))
         print("+" * 50)
+        '''
         
 
 
@@ -470,7 +473,7 @@ class ProjectController(app_manager.RyuApp):
         eth = pkt.get_protocol(ethernet.ethernet)
         arp_pkt = pkt.get_protocol(arp.arp)
         ip_pkt = pkt.get_protocol(ipv4.ipv4)
-
+        '''
         # avoid broadcast from LLDP
         if eth.ethertype == 35020:
             return
@@ -480,7 +483,7 @@ class ProjectController(app_manager.RyuApp):
             actions = []
             self.add_flow(datapath, 1, match, actions)
             return None
-
+        '''
         dst = eth.dst
         src = eth.src
         dpid = datapath.id
