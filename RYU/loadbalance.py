@@ -109,6 +109,9 @@ class ProjectController(app_manager.RyuApp):
             sum_bytes[i] = 0
             sum_pkts[i] = 0
 
+        print("\nSwitch :", ev.msg.datapath.id, "\n")
+        print(flow_stat_reply['OFPFlowStatsReply']['body'])
+
         for i in flow_stat_reply['OFPFlowStatsReply']['body']:
             if i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'] != []:
                 
