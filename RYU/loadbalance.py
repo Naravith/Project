@@ -109,8 +109,8 @@ class ProjectController(app_manager.RyuApp):
             sum_bytes[i] = 0
             sum_pkts[i] = 0
 
-        print("\nSwitch :", ev.msg.datapath.id, "\n")
-        print(flow_stat_reply['OFPFlowStatsReply']['body'])
+        #print("\nSwitch :", ev.msg.datapath.id, "\n")
+        #print(flow_stat_reply['OFPFlowStatsReply']['body'])
 
         for i in flow_stat_reply['OFPFlowStatsReply']['body']:
             if i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'] != []:
@@ -130,11 +130,11 @@ class ProjectController(app_manager.RyuApp):
                     elif j['OXMTlv']['field'] == 'eth_type':
                         eth_type = j['OXMTlv']['value']
                 
-                if eth_type not in [2054, 35020]:
+                if eth_type not in [2048, 2054, 35020]:
                     for host_port in self.host_faucet[ev.msg.datapath.id]:
                         if out_port == host_port:
-                            print("in_port : {0}\nout_port : {1}\neth_dst : {2}\nbyte : {3}\npkt : {4}\neth_type : {5}\n".format(in_port, out_port, eth_dst, byte_count, pkt_count, eth_type))
-                            print("*" * 50)
+                            #print("in_port : {0}\nout_port : {1}\neth_dst : {2}\nbyte : {3}\npkt : {4}\neth_type : {5}\n".format(in_port, out_port, eth_dst, byte_count, pkt_count, eth_type))
+                            #print("*" * 50)
                             sum_bytes[eth_dst] += byte_count
                             sum_pkts[eth_dst] += pkt_count
         
