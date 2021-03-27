@@ -49,6 +49,7 @@ class ProjectController(app_manager.RyuApp):
         self.group_ids = []
         self.adjacency = defaultdict(dict)
         self.bandwidths = defaultdict(lambda: defaultdict(lambda: DEFAULT_BW))
+        self.monitor_thread = hub.spawn(self._TrafficMonitor)
         self.datapath_for_del = []
         self.check_first_dfs = 1
         self.host_faucet = defaultdict(list)
@@ -61,7 +62,7 @@ class ProjectController(app_manager.RyuApp):
         self.flow_timestamp = defaultdict(list)
         self.port_stat_links = defaultdict(list)
         self.time_start = time.time()
-
+        
     def _TrafficMonitor(self):
         while True:
             for datapath in self.datapath_for_del:
