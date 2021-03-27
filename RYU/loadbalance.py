@@ -681,4 +681,5 @@ class ProjectController(app_manager.RyuApp):
     @set_ev_cls(event.EventHostAdd, MAIN_DISPATCHER)
     def host_add_handler(self, ev):
         HOST = ev.host
+        self.Hosts_add[HOST.mac] = (HOST.port.dpid, HOST.port.port_no)
         self.host_faucet[HOST.port.dpid].append(HOST.port.port_no)
