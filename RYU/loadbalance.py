@@ -60,6 +60,7 @@ class ProjectController(app_manager.RyuApp):
         self.flow_stat_links = defaultdict(list)
         self.flow_timestamp = defaultdict(list)
         self.port_stat_links = defaultdict(list)
+        self.time_start = time.time()
 
     def _TrafficMonitor(self):
         while True:
