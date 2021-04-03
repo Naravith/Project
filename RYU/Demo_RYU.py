@@ -117,7 +117,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
             
-            if (time.time() - self.queue_for_re_routing[1]) > 30.0 and self.ch and (time.time() - self.pred) > 80.0:
+            if (time.time() - self.queue_for_re_routing[1]) > 30.0 and self.ch and (time.time() - self.pred) > 90.0:
                 if self.queue_for_re_routing[0] != []:
                     self._re_routing(self.queue_for_re_routing[0])
                     self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
@@ -297,7 +297,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         if len(self.port_stat_links[tmp]) == 1:
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][0][0], self.port_stat_links[tmp][0][1]))
             #print("Link_Dropped : {0} packets".format(self.port_stat_links[tmp][0][4] + self.port_stat_links[tmp][0][5]))
-            print("BW Utilization (10 Mbps) : {0} %".format((self.port_stat_links[tmp][0][2] + \
+            print("BW Utilization (10 Mbps) : {0:.2f} %".format((self.port_stat_links[tmp][0][2] + \
                 self.port_stat_links[tmp][0][3]) / 1310720 * 100))
         elif len(self.port_stat_links[tmp]) == 2:
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0]\
@@ -305,7 +305,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             '''
             print("Link_Dropped : {0} packets".format((self.port_stat_links[tmp][1][4] - self.port_stat_links[tmp][0][4]) + \
                         (self.port_stat_links[tmp][1][5] - self.port_stat_links[tmp][0][5])))'''
-            print("BW Utilization (10 Mbps) : {0} %".format(((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
+            print("BW Utilization (10 Mbps) : {0:.2f} %".format(((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
                             (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 1310720 * 100))
         #print(self.port_stat_links)
         print("+" * 50)
@@ -528,8 +528,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         print('#' * 50)
         for i in self.print_bw_util:
             print("Link between switch {0} - switch {1}".format(i[0], i[1]))
-            print("\tDetected  Bandwidth Utilization : {0} %".format(i[2]))
-            print("\tPredicted Bandwidth Utilization : {0} %\n".format(i[3]))
+            print("\tDetected  Bandwidth Utilization : {0:.2f} %".format(i[2]))
+            print("\tPredicted Bandwidth Utilization : {0:.2f} %\n".format(i[3]))
         print('#' * 50)
 
     def _get_paths(self):
