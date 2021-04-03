@@ -51,6 +51,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.flow_timestamp = defaultdict(list)
         self.data_for_train = defaultdict(list)
         self.print_bw_util = []
+        self.ch = False
+        self.pred = time.time()
         #self.model = load_model('/home/sdn/Desktop/Project/RYU/my_lstm_model.h5')
     '''
     def create_dataset(self, dataset, time_step=1):
@@ -115,7 +117,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
                 
-            if (time.time() - self.queue_for_re_routing[1]) > 20.0 and (time.time() - self.time_start) > 60.0:
+            if (time.time() - self.queue_for_re_routing[1]) > 30.0 and self.ch and (time.time() - self.pred) > 50.0:
                 if self.queue_for_re_routing[0] != []:
                     self._re_routing(self.queue_for_re_routing[0])
                     self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
@@ -190,6 +192,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             
             if len(self.flow_stat_links[tmp]) == 2:
                 if (self.flow_stat_links[tmp][1][0] - self.flow_stat_links[tmp][0][0]) > 10000:
+                    self.pred = time.time()
+                    self.ch = True
                     if (i not in self.flow_timestamp) or (len(self.flow_timestamp[i]) == 0):
                         self.flow_timestamp[i].append(self.flow_stat_links[tmp][0].copy())
                 else:
