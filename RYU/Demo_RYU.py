@@ -127,7 +127,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
 
-            if self.predict_time - time.time() > 20:
+            if (time.time() - self.predict_time) > 20:
                 self._PredictBW()
                 
             '''
