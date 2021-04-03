@@ -116,8 +116,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 for link in self.link_for_DL:
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
-                
-            if (time.time() - self.queue_for_re_routing[1]) > 30.0 and self.ch and (time.time() - self.pred) > 50.0:
+            
+            if (time.time() - self.queue_for_re_routing[1]) > 30.0 and self.ch and (time.time() - self.pred) > 80.0:
                 if self.queue_for_re_routing[0] != []:
                     self._re_routing(self.queue_for_re_routing[0])
                     self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
@@ -192,7 +192,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             
             if len(self.flow_stat_links[tmp]) == 2:
                 if (self.flow_stat_links[tmp][1][0] - self.flow_stat_links[tmp][0][0]) > 10000:
-                    self.pred = time.time()
+                    if not self.ch:
+                        self.pred = time.time()
                     self.ch = True
                     if (i not in self.flow_timestamp) or (len(self.flow_timestamp[i]) == 0):
                         self.flow_timestamp[i].append(self.flow_stat_links[tmp][0].copy())
