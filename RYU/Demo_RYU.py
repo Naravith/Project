@@ -113,7 +113,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             print("link_for_DL :\n{0}".format(self.link_for_DL))
             print("+" * 70)
             '''
-            #self._PredictBW()
+            self._PredictBW()
             for datapath in self.datapath_for_del:
                 if (time.time() - self.time_start) > 15:
                     self._FlowStatReq(datapath)
@@ -304,9 +304,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         elif len(self.port_stat_links[tmp]) == 2:
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0]\
                 , self.port_stat_links[tmp][1][1]- self.port_stat_links[tmp][0][1]))
-            '''
+            
             print("Link_Dropped : {0} packets".format((self.port_stat_links[tmp][1][4] - self.port_stat_links[tmp][0][4]) + \
-                        (self.port_stat_links[tmp][1][5] - self.port_stat_links[tmp][0][5])))'''
+                        (self.port_stat_links[tmp][1][5] - self.port_stat_links[tmp][0][5])))
             print("BW Utilization (10 Mbps) : {0} %".format(((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
                             (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 1310720 * 100))
         #print(self.port_stat_links)
