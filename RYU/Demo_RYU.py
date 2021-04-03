@@ -113,7 +113,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             print("link_for_DL :\n{0}".format(self.link_for_DL))
             print("+" * 70)
             '''
-            self._PredictBW()
+            if (time.time() - self.time_start) > 15:
+                self._PredictBW()
             for datapath in self.datapath_for_del:
                 if (time.time() - self.time_start) > 15:
                     self._FlowStatReq(datapath)
@@ -455,6 +456,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self._flood(msg)
 
     def _re_routing(self, banned=[]):
+        if banned == []:
+            return
         print('+' * 50)
         print("Re-Routing Process :")
         for ban in banned:
