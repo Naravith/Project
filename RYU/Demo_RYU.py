@@ -65,14 +65,19 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
     def _PredictBW(self):
         ban = []
         for i in self.data_for_train:
+            print("link : {0}\n\tMAX  : {1}\n\tMEAN  : {2}\n\tLength : {3}".format\
+                (i, max(self.data_for_train[i]), sum(self.data_for_train[i]) / len(self.data_for_train[i]), len(self.data_for_train[i])))
+            print('#' * 50)
+            '''
             if i == 1:
                 print(len(self.data_for_train[i]))
                 print(self.data_for_train[i])
                 print("+" * 70)
-            while len(self.data_for_train[i]) > 1000:
+            '''
+            while len(self.data_for_train[i]) > 400:
                 self.data_for_train[i].pop(0)
             # prevent append from port_stat in msec
-            if len(self.data_for_train[i]) >= 1000:
+            if len(self.data_for_train[i]) >= 400:
                 tmp_max = max(self.data_for_train[i])
                 tmp_mean = sum(self.data_for_train[i]) / len(self.data_for_train[i])
                 if tmp_max > 0.8 and tmp_mean + (tmp_max - 0.8) > 0.8:
@@ -121,7 +126,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 for link in self.link_for_DL:
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
-                        
+
             if self.predict_time - time.time() > 20:
                 self._PredictBW()
                 
