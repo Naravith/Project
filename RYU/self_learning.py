@@ -18,6 +18,10 @@ import os
 import inspect
 import random
 
+from tensorflow.keras.models import load_model
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
+
 class SelfLearningBYLuxuss(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 
@@ -42,6 +46,42 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.port_stat_links = defaultdict(list)
         self.csv_filename = {}
         self.queue_for_re_routing = [[], time.time()]
+        self.flow_stat_links = defaultdict(list)
+        self.flow_timestamp = defaultdict(list)
+        self.data_for_train = defaultdict(list)
+        self.model = load_model('/home/sdn/Desktop/Project/RYU/my_lstm_model.h5')
+        self.start_run_model = time.time()
+    
+    def create_dataset(self, dataset, time_step=1):
+        dataX, dataY = [], []
+        for i in range(len(dataset) - time_step-1):
+            a = dataset[i:(i+time_step), :]
+            dataX.append(a)
+            dataY.append(dataset[i + time_step + 1, :])
+        return np.array(dataX), np.array(dataY)
+
+    def _PredictBW(self):
+        ban = []
+        if (len(self.link_for_DL) > 0) and ((time.time() - self.start_run_model) > len(self.link_for_DL) * 5.0):
+            self.start_run_model = time.time()
+            for i in self.data_for_train:
+                if i == 1:
+                    print(len(self.data_for_train[i]))
+                    print(self.data_for_train[i])
+                    print("+" * 70)
+                while len(self.data_for_train[i]) > 1000:
+                    self.data_for_train[i].pop(0)
+                # prevent append from port_stat in msec
+                if len(self.data_for_train[i]) >= 1000:
+                    scaler = MinMaxScaler(feature_range=(0,1))
+                    zero_2_one_scale = scaler.fit_transform(np.array(self.data_for_train[i]).reshape(-1,1))
+                    dataset = self.create_dataset(zero_2_one_scale, time_step=200)
+                    result_af_pred = self.model.predict(dataset)
+                    if np.max(result_af_pred) > 0.8 and np.mean(result_af_pred) > 0.75:
+                        ban.append(self.link_for_DL[i - 1])
+                        
+            self._re_routing(ban)
+    
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -64,7 +104,14 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 #self._re_routing(self.link_for_DL[random.randint(0, len(self.link_for_DL) - 1)])
     def _TrafficMonitor(self):
         while True:
+            '''
+            print("link_for_DL :\n{0}".format(self.link_for_DL))
+            print("+" * 70)
+            '''
+            self._PredictBW()
             for datapath in self.datapath_for_del:
+                if (time.time() - self.time_start) > 15:
+                    self._FlowStatReq(datapath)
                 for link in self.link_for_DL:
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
@@ -81,6 +128,95 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
 
         req = parser.OFPPortStatsRequest(datapath=datapath, flags=0, port_no=port_no)
         datapath.send_msg(req)
+
+    def _FlowStatReq(self, datapath):
+        #ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+
+        req = parser.OFPFlowStatsRequest(datapath)
+        datapath.send_msg(req)
+
+    @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
+    def _flow_stats_reply_handler(self, ev):
+        #body = ev.msg.body
+        msg = ev.msg
+
+        flow_stat_reply = msg.to_jsondict()
+        sum_bytes = {}
+        sum_pkts = {}
+
+        for i in self.hosts.keys():
+            sum_bytes[i] = 0
+            sum_pkts[i] = 0
+
+        #print("\nSwitch :", ev.msg.datapath.id, "\n")
+
+        for i in flow_stat_reply['OFPFlowStatsReply']['body']:
+            if i['OFPFlowStats']['match']['OFPMatch']['oxm_fields'] != []:
+                
+                out_port = i['OFPFlowStats']['instructions'][0]['OFPInstructionActions']['actions'][0]['OFPActionOutput']['port']
+                byte_count = i['OFPFlowStats']['byte_count']
+                pkt_count = i['OFPFlowStats']['packet_count']
+                in_port = -1
+                eth_dst = -1
+                eth_type = -1
+
+                for j in i['OFPFlowStats']['match']['OFPMatch']['oxm_fields']:
+                    if j['OXMTlv']['field'] == 'in_port':
+                        in_port = j['OXMTlv']['value']
+                    elif j['OXMTlv']['field'] == 'eth_dst': 
+                        eth_dst = j['OXMTlv']['value']
+                    elif j['OXMTlv']['field'] == 'eth_type':
+                        eth_type = j['OXMTlv']['value']
+                
+                if eth_type not in [2048, 2054, 35020]:
+                    for host_port in self.host_faucet[ev.msg.datapath.id]:
+                        if out_port == host_port:
+                            #print("in_port : {0}\nout_port : {1}\neth_dst : {2}\nbyte : {3}\npkt : {4}\neth_type : {5}\n".format(in_port, out_port, eth_dst, byte_count, pkt_count, eth_type))
+                            #print("*" * 50)
+                            sum_bytes[eth_dst] += byte_count
+                            sum_pkts[eth_dst] += pkt_count
+        
+        for i in [k for k, v in self.hosts.items() if v[0] == ev.msg.datapath.id]:
+            #print("\nLoop Bot : {0}\n{1}\n".format(i, [k for k, v in self.hosts.items() if v[0] == ev.msg.datapath.id]))
+            tmp = "HOST-{0}".format(i)
+            self.flow_stat_links[tmp].append([sum_bytes[i], sum_pkts[i], time.time()])
+            while len(self.flow_stat_links[tmp]) >= 3:
+                self.flow_stat_links[tmp].pop(0)
+            
+            if len(self.flow_stat_links[tmp]) == 2:
+                if (self.flow_stat_links[tmp][1][0] - self.flow_stat_links[tmp][0][0]) > 10000:
+                    if (i not in self.flow_timestamp) or (len(self.flow_timestamp[i]) == 0):
+                        self.flow_timestamp[i].append(self.flow_stat_links[tmp][0].copy())
+                else:
+                    '''
+                    print("\n\n+++ Not Diff Much +++\n")
+                    print("\n\n+++ Not Diff Much +++\n")
+                    print("\n\n+++ Not Diff Much +++\n")'''
+                    throughput = -1
+                    if (i in self.flow_timestamp) and (len(self.flow_timestamp[i]) == 1):
+                        start_byte = self.flow_timestamp[i][0][0]
+                        start_pkt = self.flow_timestamp[i][0][1]
+                        start_time = self.flow_timestamp[i][0][2]
+                        cur_byte = self.flow_stat_links[tmp][0][0]
+                        cur_pkt = self.flow_stat_links[tmp][0][1]
+                        cur_time = self.flow_stat_links[tmp][0][2]
+                        self.flow_timestamp[i].pop(0)
+                        throughput = ((cur_byte - start_byte) / (cur_time - start_time)) * 8
+                        pktpersec = (cur_pkt - start_pkt) / (cur_time - start_time)
+
+                    if throughput != -1:
+                        #print("Host {0}\nThroughput : {1} Mbits / sec\nX-axis : {2} Pkt / sec".format(i, throughput, pktpersec))
+                        filename = "Host_{0}.csv".format(i)
+                        if not os.path.isfile(filename):
+                            self._append_list_as_row(filename, ['Throughput', 'Pkt/sec'])
+                        self._append_list_as_row(filename, [throughput, pktpersec])
+                        
+        '''
+        print("FlowStat\n\n {0} \n\n".format(self.flow_stat_links))
+        print("FlowTime\n\n {0} \n\n".format(self.flow_timestamp))
+        print("+" * 70)
+        '''
 
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
     def _port_stats_reply_handler(self, ev):
@@ -137,6 +273,11 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 if check_more_than_zero:
                     self._append_list_as_row(filename, row_contents)
 
+                    number = int(filename.split('./link')[1].split('.csv')[0])
+                    if number not in self.data_for_train:
+                        self.data_for_train[number] = []
+                    self.data_for_train[number].append([row_contents[-1]])
+        '''
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
         if len(self.port_stat_links[tmp]) == 1:
@@ -153,7 +294,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                             (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 13107200 * 100))
         #print(self.port_stat_links)
         print("+" * 50)
-
+        '''
 
         if len(self.port_stat_links[tmp]) == 2:
             self.port_stat_links[tmp].pop(0)
