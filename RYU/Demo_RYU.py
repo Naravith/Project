@@ -51,7 +51,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.flow_timestamp = defaultdict(list)
         self.data_for_train = defaultdict(list)
         self.print_bw_util = []
-        self.predict_time = time.time()
         #self.model = load_model('/home/sdn/Desktop/Project/RYU/my_lstm_model.h5')
     '''
     def create_dataset(self, dataset, time_step=1):
@@ -61,38 +60,27 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             dataX.append(a)
             dataY.append(dataset[i + time_step + 1, :])
         return np.array(dataX), np.array(dataY)
-    '''
+    
     def _PredictBW(self):
         ban = []
         for i in self.data_for_train:
             print("link : {0}\n\tMAX  : {1}\n\tMEAN  : {2}\n\tLength : {3}".format\
                 (i, max(self.data_for_train[i]), sum(self.data_for_train[i]) / len(self.data_for_train[i]), len(self.data_for_train[i])))
             print('#' * 50)
-            '''
-            if i == 1:
-                print(len(self.data_for_train[i]))
-                print(self.data_for_train[i])
-                print("+" * 70)
-            '''
             while len(self.data_for_train[i]) > 400:
                 self.data_for_train[i].pop(0)
             # prevent append from port_stat in msec
             if len(self.data_for_train[i]) >= 400:
-                tmp_max = max(self.data_for_train[i])
-                tmp_mean = sum(self.data_for_train[i]) / len(self.data_for_train[i])
-                if tmp_max > 0.8 and tmp_mean + (tmp_max - 0.8) > 0.8:
-                    ban.append(self.link_for_DL[i - 1])
-                '''
                 scaler = MinMaxScaler(feature_range=(0,1))
                 zero_2_one_scale = scaler.fit_transform(np.array(self.data_for_train[i]).reshape(-1,1))
                 dataset = self.create_dataset(zero_2_one_scale, time_step=200)
                 result_af_pred = self.model.predict(dataset)
                 if np.max(result_af_pred) > 0.8 and np.mean(result_af_pred) > 0.75:
                     ban.append(self.link_for_DL[i - 1])
-                '''
+                
                     
         self._re_routing(ban)
-    
+    '''
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -126,12 +114,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 for link in self.link_for_DL:
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
-
-            if (time.time() - self.predict_time) > 20:
-                self._PredictBW()
                 
-            '''
-            if (time.time() - self.queue_for_re_routing[1]) > 20.0:
+            if (time.time() - self.queue_for_re_routing[1]) > 20.0 and (time.time() - self.time_start) > 60.0:
                 if self.queue_for_re_routing[0] != []:
                     self._re_routing(self.queue_for_re_routing[0])
                     self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
@@ -139,7 +123,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             else:
                 self.queue_for_re_routing[0] = []
                 self.print_bw_util = []
-            '''
             
             hub.sleep(1)
 
@@ -303,7 +286,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self.data_for_train[number] = []
                     self.data_for_train[number].append(row_contents[-1])
                     #self.data_for_train[number].append([row_contents[-1]])
-        '''
+        
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         #print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
         if len(self.port_stat_links[tmp]) == 1:
@@ -314,14 +297,14 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         elif len(self.port_stat_links[tmp]) == 2:
             print("Tx : {0} packets | Rx:{1} packets".format(self.port_stat_links[tmp][1][0] - self.port_stat_links[tmp][0][0]\
                 , self.port_stat_links[tmp][1][1]- self.port_stat_links[tmp][0][1]))
-            
+            '''
             print("Link_Dropped : {0} packets".format((self.port_stat_links[tmp][1][4] - self.port_stat_links[tmp][0][4]) + \
-                        (self.port_stat_links[tmp][1][5] - self.port_stat_links[tmp][0][5])))
+                        (self.port_stat_links[tmp][1][5] - self.port_stat_links[tmp][0][5])))'''
             print("BW Utilization (10 Mbps) : {0} %".format(((self.port_stat_links[tmp][1][2] - self.port_stat_links[tmp][0][2]) + \
                             (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 1310720 * 100))
         #print(self.port_stat_links)
         print("+" * 50)
-        '''
+        
 
 
         if len(self.port_stat_links[tmp]) == 2:
@@ -543,7 +526,6 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             print("\tDetected  Bandwidth Utilization : {0} %".format(i[2]))
             print("\tPredicted Bandwidth Utilization : {0} %\n".format(i[3]))
         print('#' * 50)
-        self.predict_time = time.time()
 
     def _get_paths(self):
         cnt = 1
