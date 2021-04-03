@@ -60,7 +60,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             dataX.append(a)
             dataY.append(dataset[i + time_step + 1, :])
         return np.array(dataX), np.array(dataY)
-    
+    '''
     def _PredictBW(self):
         ban = []
         for i in self.data_for_train:
@@ -72,15 +72,21 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 self.data_for_train[i].pop(0)
             # prevent append from port_stat in msec
             if len(self.data_for_train[i]) >= 1000:
+                tmp_max = max(self.data_for_train[i])
+                tmp_mean = sum(self.data_for_train[i]) / len(self.data_for_train[i])
+                if tmp_max > 0.8 and tmp_mean + (tmp_max - 0.8) > 0.8:
+                    ban.append(self.link_for_DL[i - 1])
+                '''
                 scaler = MinMaxScaler(feature_range=(0,1))
                 zero_2_one_scale = scaler.fit_transform(np.array(self.data_for_train[i]).reshape(-1,1))
                 dataset = self.create_dataset(zero_2_one_scale, time_step=200)
                 result_af_pred = self.model.predict(dataset)
                 if np.max(result_af_pred) > 0.8 and np.mean(result_af_pred) > 0.75:
                     ban.append(self.link_for_DL[i - 1])
+                '''
                     
         self._re_routing(ban)
-    '''
+    
 
     @set_ev_cls(event.EventSwitchEnter)
     def switch_enter_handler(self, ev):
@@ -258,7 +264,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self.port_stat_links[tmp][0][1], dropped, bw_util * 1310720]
 
                     random_val = (randint(3, 9) / 100)
-                    if bw_util + random_val > 0.1 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
+                    if bw_util + random_val > 0.8 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
                         self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
                         self.print_bw_util.append([msg.datapath.id, dst_switch, bw_util, bw_util + random_val])
                     if bw_util < 1e-03:
@@ -273,7 +279,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                         self.port_stat_links[tmp][1][1] - self.port_stat_links[tmp][0][1], dropped, bw_util * 1310720]
 
                     random_val = (randint(3, 9) / 100)
-                    if bw_util + random_val > 0.1 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
+                    if bw_util + random_val > 0.8 and ([msg.datapath.id, dst_switch] not in self.queue_for_re_routing[0]):
                         self.queue_for_re_routing[0].append([msg.datapath.id, dst_switch])
                         self.print_bw_util.append([msg.datapath.id, dst_switch, bw_util, bw_util + random_val])
                     if bw_util < 1e-03:
@@ -285,8 +291,9 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                     number = int(filename.split('./link')[1].split('.csv')[0])
                     if number not in self.data_for_train:
                         self.data_for_train[number] = []
-                    self.data_for_train[number].append([row_contents[-1]])
-        
+                    self.data_for_train[number].append(row_contents[-1])
+                    #self.data_for_train[number].append([row_contents[-1]])
+        '''
         print("Switch : {0} || Port : {1}".format(msg.datapath.id, port_stat['port_no']))
         #print("Time :", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
         if len(self.port_stat_links[tmp]) == 1:
@@ -304,7 +311,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                             (self.port_stat_links[tmp][1][3] - self.port_stat_links[tmp][0][3])) / 1310720 * 100))
         #print(self.port_stat_links)
         print("+" * 50)
-        
+        '''
 
 
         if len(self.port_stat_links[tmp]) == 2:
