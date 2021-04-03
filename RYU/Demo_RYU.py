@@ -113,8 +113,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             print("link_for_DL :\n{0}".format(self.link_for_DL))
             print("+" * 70)
             '''
-            if (time.time() - self.time_start) > 15:
-                self._PredictBW()
+            
             for datapath in self.datapath_for_del:
                 if (time.time() - self.time_start) > 15:
                     self._FlowStatReq(datapath)
@@ -124,7 +123,8 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             
             if (time.time() - self.queue_for_re_routing[1]) > 20.0:
                 if self.queue_for_re_routing[0] != []:
-                    self._re_routing(self.queue_for_re_routing[0])
+                    self._PredictBW()
+                    #self._re_routing(self.queue_for_re_routing[0])
                     self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
                     self.print_bw_util = []
             else:
