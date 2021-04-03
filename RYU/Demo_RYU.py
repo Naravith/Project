@@ -51,6 +51,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
         self.flow_timestamp = defaultdict(list)
         self.data_for_train = defaultdict(list)
         self.print_bw_util = []
+        self.predict_time = time.time()
         #self.model = load_model('/home/sdn/Desktop/Project/RYU/my_lstm_model.h5')
     '''
     def create_dataset(self, dataset, time_step=1):
@@ -120,17 +121,20 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
                 for link in self.link_for_DL:
                     if datapath.id == link[0]:
                         self._PortStatReq(datapath, self.adjacency[link[0]][link[1]])
-            
+                        
+            if self.predict_time - time.time() > 20:
+                self._PredictBW()
+                
+            '''
             if (time.time() - self.queue_for_re_routing[1]) > 20.0:
                 if self.queue_for_re_routing[0] != []:
-                    self._PredictBW()
-                    #self._re_routing(self.queue_for_re_routing[0])
+                    self._re_routing(self.queue_for_re_routing[0])
                     self.queue_for_re_routing[0], self.queue_for_re_routing[1] = [], time.time()
                     self.print_bw_util = []
             else:
                 self.queue_for_re_routing[0] = []
                 self.print_bw_util = []
-            
+            '''
             
             hub.sleep(1)
 
@@ -534,7 +538,7 @@ class SelfLearningBYLuxuss(app_manager.RyuApp):
             print("\tDetected  Bandwidth Utilization : {0} %".format(i[2]))
             print("\tPredicted Bandwidth Utilization : {0} %\n".format(i[3]))
         print('#' * 50)
-        
+        self.predict_time = time.time()
 
     def _get_paths(self):
         cnt = 1
